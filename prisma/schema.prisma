@@ -1,0 +1,237 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+//
+// =========================
+// USER
+// =========================
+//
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  address   String?
+  city      String?
+  district  String?
+  ward      String?
+  avatar    String?
+  role      String   @default("user") // user | admin
+  isActive  Boolean  @default(true)
+  reviews   Review[]
+  questions Question[]
+  replies   Reply[]
+  
+  // Quan hệ
+  orders    Order[]
+  cart      Cart?    // Mối quan hệ 1-1 với giỏ hàng
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+//
+// =========================
+// PRODUCT
+// =========================
+//
+
+model Product {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  slug          String      @unique
+  description   String?     // Bài viết (Thông tin chi tiết - hỗ trợ HTML)
+  price         Float
+  originalPrice Float?
+  stock         Int
+  sold          Int         @default(0)
+  category      String
+  brand         String
+  imageUrl      String
+  gallery       String[]
+  condition     String
+  isNew         Boolean     @default(false)
+  isFeatured    Boolean     @default(false)
+  rating        Float       @default(5)
+  reviewCount   Int         @default(0)
+  tags          String[]
+  reviews       Review[]
+
+  // ==========================================
+  // CÁC TRƯỜNG MỚI ĐƯỢC THÊM VÀO ĐỂ ĐÁP ỨNG GIAO DIỆN
+  // ==========================================
+  highlights    String[]    // Tính năng nổi bật (Dạng danh sách gạch đầu dòng)
+  specs         Json?       // Thông số kỹ thuật (Dạng key-value động)
+  // Ví dụ: {"Kích thước màn hình": "15.6 inch", "Card đồ họa": "RTX 3050"}
+  // Đối với chuột: {"DPI": "16000", "Kết nối": "Wireless"}
+
+  // Quan hệ
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("products")
+}
+
+//
+// =========================
+// CART (GIỎ HÀNG)
+// =========================
+//
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String  @db.ObjectId
+  productId String  @db.ObjectId
+  quantity  Int     @default(1)
+  
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("cart_items")
+}
+
+//
+// =========================
+// ORDER
+// =========================
+//
+
+model Order {
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String?     @db.ObjectId
+  user             User?       @relation(fields: [userId], references: [id])
+  customerName     String
+  phone            String
+  email            String?
+  address          String
+  totalAmount      Float
+  shippingFee      Float       @default(0)
+  discountAmount   Float       @default(0)
+  paymentMethod    String      // COD | BANKING | MOMO | VNPAY
+  paymentStatus    String      @default("pending")
+  status           String      @default("pending")
+  note             String?
+  items            OrderItem[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String  @db.ObjectId
+  productId String  @db.ObjectId
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+model News {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  summary     String?  // Mô tả ngắn
+  content     String   // Nội dung bài viết (HTML)
+  imageUrl    String   // Ảnh bìa bài viết
+  author      String   @default("Admin")
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("news")
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  type      String   // "system" | "broadcast"
+  target    String   @default("all") // "all" | "userId" (nếu là thông báo cá nhân)
+  userId    String?  @db.ObjectId    // ID của người nhận nếu là thông báo riêng
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+//
+// =========================
+// REVIEW (ĐÁNH GIÁ)
+// =========================
+//
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  rating    Int      @default(5)
+  comment   String
+  createdAt DateTime @default(now())
+
+  // Quan hệ
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+//
+// =========================
+// HỎI ĐÁP (Q&A)
+// =========================
+//
+
+model Question {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies   Reply[]
+
+  @@map("questions")
+}
+
+model Reply {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  questionId String   @db.ObjectId
+  userId     String   @db.ObjectId // ID của Admin trả lời
+  content    String
+  createdAt  DateTime @default(now())
+
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("replies")
+}
