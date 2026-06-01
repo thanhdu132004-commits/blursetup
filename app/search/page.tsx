@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Search, Frown } from "lucide-react";
 import { ProductCard, type Product } from "@/components/product-card";
 import { getProducts } from "@/app/admin/products/actions";
 
-export default function SearchPage() {
+// 1. Tách toàn bộ nội dung xử lý tìm kiếm vào component con
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || ""; // Lấy từ khóa từ URL
 
@@ -79,5 +80,20 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// 2. Component chính bọc Suspense bên ngoài
+export default function SearchPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="bg-gray-50 dark:bg-[#09090b] min-h-screen flex items-center justify-center">
+          <div className="text-center py-10 font-bold text-gray-500 dark:text-gray-400">Đang tải kết quả tìm kiếm...</div>
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }
