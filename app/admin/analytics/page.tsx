@@ -41,11 +41,11 @@ function AnalyticsPage() {
   if (!isMounted) return null;
 
   return (
-    <div className="p-6 md:p-8 bg-gray-50/50 min-h-screen space-y-8">
+    <div className="p-6 md:p-8 bg-gray-50 dark:bg-[#09090b] min-h-screen space-y-8 transition-colors duration-300">
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Báo cáo & Phân tích</h1>
-        <p className="text-sm text-gray-500 font-medium">Cập nhật trực tiếp (Real-time) từ hệ thống Database</p>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Báo cáo & Phân tích</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Cập nhật trực tiếp (Real-time) từ hệ thống Database</p>
       </div>
 
       {loading ? (
@@ -57,53 +57,53 @@ function AnalyticsPage() {
         <>
           {/* ROW 1: TỔNG QUAN CHỈ SỐ (KPI CARDS) */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 rounded-xl text-green-600"><DollarSign className="w-6 h-6" /></div>
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400"><DollarSign className="w-6 h-6" /></div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Tổng Doanh Thu</p>
-                  <p className="text-xl font-black text-gray-900 tracking-tight">{formatCurrency(stats.totalRevenue)}</p>
+                  <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tổng Doanh Thu</p>
+                  <p className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{formatCurrency(stats.totalRevenue)}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-xl text-blue-600"><ShoppingCart className="w-6 h-6" /></div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400"><ShoppingCart className="w-6 h-6" /></div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Đơn hàng thành công</p>
-                  <p className="text-xl font-black text-gray-900 tracking-tight">{stats.totalOrders} <span className="text-sm font-bold text-gray-500">đơn</span></p>
+                  <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Đơn hàng thành công</p>
+                  <p className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{stats.totalOrders} <span className="text-sm font-bold text-gray-500 dark:text-gray-400">đơn</span></p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-orange-100 rounded-xl text-orange-600"><Package className="w-6 h-6" /></div>
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl text-orange-600 dark:text-orange-400"><Package className="w-6 h-6" /></div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Mặt hàng trong kho</p>
-                  <p className="text-xl font-black text-gray-900 tracking-tight">{stats.totalProducts} <span className="text-sm font-bold text-gray-500">sản phẩm</span></p>
+                  <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Mặt hàng trong kho</p>
+                  <p className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{stats.totalProducts} <span className="text-sm font-bold text-gray-500 dark:text-gray-400">sản phẩm</span></p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-100 rounded-xl text-purple-600"><Users className="w-6 h-6" /></div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400"><Users className="w-6 h-6" /></div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Tài khoản User</p>
-                  <p className="text-xl font-black text-gray-900 tracking-tight">{stats.usersCount} <span className="text-sm font-bold text-gray-500">người</span></p>
+                  <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tài khoản User</p>
+                  <p className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{stats.usersCount} <span className="text-sm font-bold text-gray-500 dark:text-gray-400">người</span></p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ROW 2: BIỂU ĐỒ DIỄN BIẾN DOANH THU & ĐƠN HÀNG (AREA CHART - DUAL AXIS) */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm w-full">
+          {/* ROW 2: BIỂU ĐỒ DIỄN BIẾN DOANH THU & ĐƠN HÀNG */}
+          <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm w-full">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-red-600" />
-                <h2 className="text-base font-bold text-gray-900">Tăng trưởng Doanh thu & Lượng đơn hàng</h2>
+                <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-500" />
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Tăng trưởng Doanh thu & Lượng đơn hàng</h2>
               </div>
             </div>
             
@@ -121,20 +121,17 @@ function AnalyticsPage() {
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                    <XAxis dataKey="name" fontSize={12} tickMargin={10} axisLine={false} tickLine={false} />
-                    
-                    {/* Trục Y bên trái cho Doanh Thu */}
-                    <YAxis yAxisId="left" fontSize={11} tickFormatter={formatCompactYAxis} axisLine={false} tickLine={false} />
-                    {/* Trục Y bên phải cho Số Đơn Hàng */}
-                    <YAxis yAxisId="right" orientation="right" fontSize={11} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-800" />
+                    <XAxis dataKey="name" fontSize={12} tickMargin={10} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
+                    <YAxis yAxisId="left" fontSize={11} tickFormatter={formatCompactYAxis} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
+                    <YAxis yAxisId="right" orientation="right" fontSize={11} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
                     
                     <RechartsTooltip 
                       formatter={(value: any, name: string) => [
                         name === "doanh_thu" ? formatCurrency(value) : value + " đơn", 
                         name === "doanh_thu" ? "Doanh thu" : "Số đơn hàng"
                       ]}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: '#fff' }}
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '10px' }} />
                     
@@ -144,7 +141,7 @@ function AnalyticsPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="text-sm text-gray-400 italic text-center py-20 bg-gray-50 rounded-xl">Hệ thống chưa ghi nhận đơn hàng nào.</div>
+              <div className="text-sm text-gray-400 italic text-center py-20 bg-gray-50 dark:bg-[#09090b] rounded-xl">Hệ thống chưa ghi nhận đơn hàng nào.</div>
             )}
           </div>
 
@@ -152,19 +149,19 @@ function AnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Phân bổ sản phẩm (Bar Chart) */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
               <div className="flex items-center gap-2 mb-6">
                 <Database className="w-5 h-5 text-gray-500" />
-                <h2 className="text-sm font-bold text-gray-900 uppercase">Sản phẩm theo Danh mục</h2>
+                <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase">Sản phẩm theo Danh mục</h2>
               </div>
               {productData.length > 0 ? (
                 <div className="w-full h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={productData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                      <XAxis dataKey="name" fontSize={11} tickMargin={10} axisLine={false} tickLine={false} />
-                      <YAxis fontSize={11} allowDecimals={false} axisLine={false} tickLine={false} />
-                      <RechartsTooltip cursor={{fill: '#f9fafb'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-800" />
+                      <XAxis dataKey="name" fontSize={11} tickMargin={10} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
+                      <YAxis fontSize={11} allowDecimals={false} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
+                      <RechartsTooltip cursor={{fill: '#f3f4f6', opacity: 0.5}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                       <Bar dataKey="so_luong" name="Số lượng (cái)" fill="#4f46e5" radius={[6, 6, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -175,10 +172,10 @@ function AnalyticsPage() {
             </div>
 
             {/* Tỷ lệ trạng thái đơn hàng (Pie Chart) */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+            <div className="bg-white dark:bg-[#18181b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col">
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="w-5 h-5 text-gray-500" />
-                <h2 className="text-sm font-bold text-gray-900 uppercase">Tỷ lệ Trạng thái Đơn hàng</h2>
+                <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase">Tỷ lệ Trạng thái Đơn hàng</h2>
               </div>
               {statusData.length > 0 ? (
                 <div className="w-full flex-1 min-h-[280px]">
@@ -210,7 +207,6 @@ function AnalyticsPage() {
                 <div className="text-xs text-gray-400 text-center py-20 flex-1">Chưa có giao dịch nào được ghi nhận.</div>
               )}
             </div>
-
           </div>
         </>
       )}

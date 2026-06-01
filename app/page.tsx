@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { getQuestions, submitQuestion } from "@/app/actions/qa";
 import Link from "next/link";
-import toast from "react-hot-toast"; // <-- IMPORT THƯ VIỆN TOAST
+import toast from "react-hot-toast"; 
 import { 
   Monitor, Keyboard, Mouse, Headphones, Armchair, Zap, Flame, 
   ChevronLeft, ChevronRight, Filter, Truck, Sparkles, CircleDollarSign, 
@@ -48,16 +48,15 @@ const MOCK_REVIEWS = [
   },
 ];
 
-
 function Home() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollOldRef = useRef<HTMLDivElement>(null); // Ref cho cuộn hàng cũ
-  const scrollViewedRef = useRef<HTMLDivElement>(null); // Ref cho cuộn sản phẩm đã xem
+  const scrollOldRef = useRef<HTMLDivElement>(null); 
+  const scrollViewedRef = useRef<HTMLDivElement>(null); 
   const productGridRef = useRef<HTMLDivElement>(null);
   
   const [products, setProducts] = useState<Product[]>([]);
   const [newsList, setNewsList] = useState<any[]>([]); 
-  const [viewedProducts, setViewedProducts] = useState<Product[]>([]); // State chứa SP đã xem
+  const [viewedProducts, setViewedProducts] = useState<Product[]>([]); 
   const [loading, setLoading] = useState(true);
   
   const [visibleCount, setVisibleCount] = useState(10);
@@ -135,13 +134,11 @@ function Home() {
         try {
           const storedSlugs = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
           if (storedSlugs.length > 0) {
-            // Lọc ra các SP có trong DB khớp với lịch sử đã xem
             const viewed = storedSlugs
               .map((slug: string) => formattedProducts.find(p => p.slug === slug || p.id === slug))
               .filter(Boolean);
-            setViewedProducts(viewed.slice(0, 7)); // Lấy tối đa 7 sản phẩm
+            setViewedProducts(viewed.slice(0, 7));
           } else {
-            // Nếu chưa xem gì, tạm hiển thị 7 sản phẩm để làm mẫu giao diện cho đẹp
             setViewedProducts(formattedProducts.slice(0, 7));
           }
         } catch (e) {
@@ -232,11 +229,11 @@ function Home() {
   const flashSaleProducts = products.filter(p => p.originalPrice && p.originalPrice > p.price).slice(0, 5);
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-12">
+    <div className="bg-gray-100 dark:bg-[#09090b] min-h-screen pb-12 transition-colors duration-300">
       <section className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 space-y-10">
         
         {/* KHỐI 1: MENU NGANG CHỌN DANH MỤC */}
-        <div className="bg-white rounded-xl border border-gray-200 flex items-center justify-between overflow-x-auto py-2 px-2 shadow-sm [&::-webkit-scrollbar]:hidden">
+        <div className="bg-white dark:bg-[#18181b] rounded-xl border border-gray-200 dark:border-gray-800 flex items-center justify-between overflow-x-auto py-2 px-2 shadow-sm [&::-webkit-scrollbar]:hidden">
           {menuItems.map((item, index) => (
             <button 
               key={index} 
@@ -245,7 +242,7 @@ function Home() {
                 scrollToProducts();
               }}
               className={`flex flex-col md:flex-row items-center gap-2 px-4 py-2 transition-all min-w-max rounded-lg
-                ${activeCategory === item.name ? "bg-red-50 text-red-600 font-bold" : "text-gray-700 hover:text-red-600 font-medium"}`}
+                ${activeCategory === item.name ? "bg-red-50 dark:bg-red-900/20 text-red-600 font-bold" : "text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 font-medium"}`}
             >
               {item.icon} <span className="text-sm">{item.name}</span>
             </button>
@@ -289,7 +286,7 @@ function Home() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {flashSaleProducts.map((product) => (
-                  <div key={`flash-${product.id}`} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1">
+                  <div key={`flash-${product.id}`} className="bg-white dark:bg-[#18181b] rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1">
                     <ProductCard product={product} />
                   </div>
                 ))}
@@ -300,7 +297,7 @@ function Home() {
 
         {/* KHỐI 3: THƯƠNG HIỆU SẢN PHẨM */}
         <div>
-          <h2 className="text-lg font-bold mb-4 text-gray-800 uppercase tracking-tight">Thương hiệu nổi bật</h2>
+          <h2 className="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100 uppercase tracking-tight">Thương hiệu nổi bật</h2>
           <div className="flex flex-wrap gap-3">
             {brands.map((brand, index) => (
               <button 
@@ -310,7 +307,7 @@ function Home() {
                   scrollToProducts();
                 }}
                 className={`flex items-center justify-center h-10 px-5 border rounded-lg transition-all cursor-pointer min-w-[100px]
-                  ${activeBrand === brand ? "border-red-600 bg-red-50 text-red-600 font-black shadow-sm" : "bg-white border-gray-200 hover:border-red-600 hover:text-red-600 font-bold"}`}
+                  ${activeBrand === brand ? "border-red-600 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-black shadow-sm" : "bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 font-bold dark:text-gray-300"}`}
               >
                 <span className="text-sm tracking-wide">{brand}</span>
               </button>
@@ -328,7 +325,7 @@ function Home() {
             </div>
           </div>
           
-          <button onClick={() => scroll('left', scrollRef)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-gray-50 transition-all text-gray-800">
+          <button onClick={() => scroll('left', scrollRef)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center w-12 h-12 bg-white dark:bg-[#18181b] dark:text-gray-200 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-800">
             <ChevronLeft className="w-6 h-6" />
           </button>
 
@@ -338,7 +335,7 @@ function Home() {
             ) : (
               products.filter(p => p.isFeatured).length > 0 ? (
                 products.filter(p => p.isFeatured).map(product => (
-                    <div key={`carousel-${product.id}`} className="min-w-[200px] md:min-w-[220px] lg:min-w-[230px] snap-start bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div key={`carousel-${product.id}`} className="min-w-[200px] md:min-w-[220px] lg:min-w-[230px] snap-start bg-white dark:bg-[#18181b] rounded-xl shadow-sm hover:shadow-md transition-shadow">
                       <ProductCard product={product} />
                     </div>
                   ))
@@ -348,16 +345,16 @@ function Home() {
             )}
           </div>
 
-          <button onClick={() => scroll('right', scrollRef)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden md:flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-gray-50 transition-all text-gray-800">
+          <button onClick={() => scroll('right', scrollRef)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden md:flex items-center justify-center w-12 h-12 bg-white dark:bg-[#18181b] dark:text-gray-200 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-800">
             <ChevronRight className="w-6 h-6" />
           </button>
         </div>
 
         {/* KHỐI 4.5: HÀNG CŨ / THANH LÝ GIÁ TỐT */}
         {!loading && oldProducts.length > 0 && (
-          <div className="relative bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200">
+          <div className="relative bg-white dark:bg-[#18181b] rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Tags className="w-6 h-6 text-blue-600" /> Hàng Cũ Giá Tốt
               </h2>
               <Link href="/hangcu" className="text-sm font-bold text-red-600 hover:text-red-700 hover:underline flex items-center transition-colors">
@@ -365,19 +362,19 @@ function Home() {
               </Link>
             </div>
             
-            <button onClick={() => scroll('left', scrollOldRef)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md hover:bg-gray-50 transition-all text-gray-800">
+            <button onClick={() => scroll('left', scrollOldRef)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white dark:bg-[#18181b] dark:text-gray-200 border border-gray-200 dark:border-gray-800 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-800">
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <div ref={scrollOldRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden scroll-smooth">
               {oldProducts.map(product => (
-                <div key={`old-${product.id}`} className="min-w-[200px] md:min-w-[220px] lg:min-w-[230px] snap-start bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                <div key={`old-${product.id}`} className="min-w-[200px] md:min-w-[220px] lg:min-w-[230px] snap-start bg-white dark:bg-[#18181b] rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800">
                   <ProductCard product={product} />
                 </div>
               ))}
             </div>
 
-            <button onClick={() => scroll('right', scrollOldRef)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md hover:bg-gray-50 transition-all text-gray-800">
+            <button onClick={() => scroll('right', scrollOldRef)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white dark:bg-[#18181b] dark:text-gray-200 border border-gray-200 dark:border-gray-800 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-800">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -388,7 +385,7 @@ function Home() {
         {/* KHỐI 5: BỘ LỌC VÀ SẮP XẾP CHÍNH */}
         <div className="pt-4 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Chọn theo tiêu chí</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Chọn theo tiêu chí</h2>
             {(activeCategory || activeBrand || activePrice || activeSort !== "Phổ biến") && (
               <button onClick={clearFilters} className="text-xs font-bold text-red-600 flex items-center gap-1 hover:underline">
                 <X className="w-3.5 h-3.5" /> Bỏ chọn tất cả
@@ -397,10 +394,10 @@ function Home() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 z-40 relative">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-red-500 text-red-600 font-semibold rounded-lg hover:bg-red-50 transition-colors shadow-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#18181b] border border-red-500 text-red-600 font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shadow-sm">
               <Filter className="w-4 h-4" /> Bộ lọc
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:border-red-600 hover:text-red-600 transition-colors shadow-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:border-red-600 hover:text-red-600 transition-colors shadow-sm">
               <Truck className="w-4 h-4" /> Sẵn hàng
             </button>
 
@@ -413,10 +410,10 @@ function Home() {
               return (
                 <DropdownMenu key={idx}>
                   <DropdownMenuTrigger className={`flex items-center justify-between gap-2 px-4 py-2 border rounded-lg transition-all text-sm font-medium outline-none 
-                    ${isActive ? "bg-red-50 border-red-500 text-red-600" : "bg-white border-gray-200 text-gray-700 hover:border-red-600"}`}>
+                    ${isActive ? "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600" : "bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-red-600"}`}>
                     {displayText} <ChevronDown className="w-4 h-4 opacity-70" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48 bg-white border-gray-200 shadow-xl rounded-xl p-1 z-50">
+                  <DropdownMenuContent align="start" className="w-48 bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 shadow-xl rounded-xl p-1 z-50">
                     {filter.items.map((item, itemIdx) => {
                       const isSelected = (filter.type === "brand" && activeBrand === item) || (filter.type === "price" && activePrice === item);
                       return (
@@ -427,7 +424,7 @@ function Home() {
                             if (filter.type === "price") setActivePrice(activePrice === item ? null : item);
                           }}
                           className={`cursor-pointer px-3 py-2 text-sm rounded-md font-medium transition-colors
-                            ${isSelected ? "bg-red-600 text-white focus:bg-red-600 focus:text-white" : "text-gray-700 hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600"}`}
+                            ${isSelected ? "bg-red-600 text-white focus:bg-red-600 focus:text-white" : "text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 focus:bg-red-50 focus:text-red-600"}`}
                         >
                           {item}
                         </DropdownMenuItem>
@@ -439,22 +436,22 @@ function Home() {
             })}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-200">
-            <span className="font-bold text-gray-800">Sắp xếp theo</span>
+          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <span className="font-bold text-gray-800 dark:text-gray-100">Sắp xếp theo</span>
             <button onClick={() => setActiveSort("Phổ biến")} className={`flex items-center gap-2 px-4 py-1.5 border rounded-lg transition-colors shadow-sm font-semibold
-              ${activeSort === "Phổ biến" ? "bg-red-50 border-red-500 text-red-600" : "bg-white border-gray-200 text-gray-700 hover:border-red-600 hover:text-red-600"}`}>
+              ${activeSort === "Phổ biến" ? "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600" : "bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-red-600 hover:text-red-600"}`}>
               <Star className={`w-4 h-4 ${activeSort === "Phổ biến" ? "fill-red-600" : ""}`} /> Phổ biến
             </button>
             <button onClick={() => setActiveSort("Khuyến mãi HOT")} className={`flex items-center gap-2 px-4 py-1.5 border rounded-lg transition-colors font-semibold
-              ${activeSort === "Khuyến mãi HOT" ? "bg-red-50 border-red-500 text-red-600" : "bg-white border-gray-200 text-gray-700 hover:border-red-600 hover:text-red-600"}`}>
+              ${activeSort === "Khuyến mãi HOT" ? "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600" : "bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-red-600 hover:text-red-600"}`}>
               <Flame className={`w-4 h-4 ${activeSort === "Khuyến mãi HOT" ? "text-red-600" : "text-orange-500"}`} /> Khuyến mãi HOT
             </button>
             <button onClick={() => setActiveSort("Giá Thấp - Cao")} className={`flex items-center gap-2 px-4 py-1.5 border rounded-lg transition-colors font-semibold
-              ${activeSort === "Giá Thấp - Cao" ? "bg-red-50 border-red-500 text-red-600" : "bg-white border-gray-200 text-gray-700 hover:border-red-600 hover:text-red-600"}`}>
+              ${activeSort === "Giá Thấp - Cao" ? "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600" : "bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-red-600 hover:text-red-600"}`}>
               <TrendingUp className="w-4 h-4" /> Giá Thấp - Cao
             </button>
             <button onClick={() => setActiveSort("Giá Cao - Thấp")} className={`flex items-center gap-2 px-4 py-1.5 border rounded-lg transition-colors font-semibold
-              ${activeSort === "Giá Cao - Thấp" ? "bg-red-50 border-red-500 text-red-600" : "bg-white border-gray-200 text-gray-700 hover:border-red-600 hover:text-red-600"}`}>
+              ${activeSort === "Giá Cao - Thấp" ? "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600" : "bg-white dark:bg-[#18181b] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-red-600 hover:text-red-600"}`}>
               <TrendingDown className="w-4 h-4" /> Giá Cao - Thấp
             </button>
           </div>
@@ -468,7 +465,7 @@ function Home() {
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {displayProducts.slice(0, visibleCount).map((product, idx) => (
-                  <div key={`grid-${product.id}-${idx}`} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                  <div key={`grid-${product.id}-${idx}`} className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800">
                     <ProductCard product={product} />
                   </div>
                 ))}
@@ -478,7 +475,7 @@ function Home() {
                 <div className="flex justify-center pt-4">
                   <button 
                     onClick={() => setVisibleCount(prev => prev + 10)}
-                    className="flex items-center gap-1 px-8 py-3 bg-white border border-gray-200 text-sm font-semibold text-gray-700 rounded-xl hover:border-red-500 hover:text-red-600 shadow-sm transition-all hover:bg-red-50"
+                    className="flex items-center gap-1 px-8 py-3 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-xl hover:border-red-500 hover:text-red-600 shadow-sm transition-all hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     Xem thêm {displayProducts.length - visibleCount} sản phẩm <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
@@ -486,12 +483,12 @@ function Home() {
               )}
             </>
           ) : (
-            <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center py-16 bg-white dark:bg-[#18181b] rounded-2xl border border-gray-100 dark:border-gray-800">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-1">Không tìm thấy sản phẩm nào</h3>
-              <p className="text-sm text-gray-500 mb-4">Vui lòng thử bỏ bớt bộ lọc hoặc chọn danh mục khác.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Không tìm thấy sản phẩm nào</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Vui lòng thử bỏ bớt bộ lọc hoặc chọn danh mục khác.</p>
               <button onClick={clearFilters} className="px-6 py-2 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition">
                 Xóa tất cả bộ lọc
               </button>
@@ -502,7 +499,7 @@ function Home() {
         {/* KHỐI 7: REVIEW SẢN PHẨM (YOUTUBE) */}
         <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800 uppercase tracking-tight flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 uppercase tracking-tight flex items-center gap-2">
               <Play className="h-5 w-5 text-red-600 fill-red-600" /> Review sản phẩm
             </h2>
             <Link href="https://www.youtube.com/@MixiGaming3con" target="_blank" className="text-sm text-red-600 hover:underline font-medium">
@@ -545,28 +542,32 @@ function Home() {
           </div>
         </div>
 
-        {/* KHỐI 8: SẢN PHẨM BẠN ĐÃ XEM LẠI */}
+{/* KHỐI 8: SẢN PHẨM BẠN ĐÃ XEM LẠI */}
         {!loading && viewedProducts.length > 0 && (
-          <div className="relative bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 mt-8">
-            <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-3">
-              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+          <div className="relative bg-white dark:bg-[#18181b] rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 dark:border-gray-800 mt-8 transition-colors duration-300">
+            <div className="flex items-center justify-between mb-6 border-b border-gray-100 dark:border-gray-800 pb-3">
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Clock className="w-6 h-6 text-blue-600" /> Sản phẩm bạn đã xem
               </h2>
             </div>
             
-            <button onClick={() => scroll('left', scrollViewedRef)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md hover:bg-gray-50 transition-all text-gray-800">
+            <button onClick={() => scroll('left', scrollViewedRef)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white dark:bg-[#18181b] dark:text-gray-200 border border-gray-200 dark:border-gray-800 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-800">
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <div ref={scrollViewedRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden scroll-smooth">
               {viewedProducts.map((product, idx) => (
-                <div key={`viewed-${product.id}-${idx}`} className="min-w-[200px] md:min-w-[220px] lg:min-w-[230px] snap-start bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                <div 
+                  key={`viewed-${product.id}-${idx}`} 
+                  // ĐÃ FIX: Thêm flex-none và đổi min-w thành w cố định
+                  className="flex-none w-[200px] md:w-[220px] lg:w-[230px] snap-start bg-white dark:bg-[#18181b] rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800"
+                >
                   <ProductCard product={product} />
                 </div>
               ))}
             </div>
 
-            <button onClick={() => scroll('right', scrollViewedRef)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md hover:bg-gray-50 transition-all text-gray-800">
+            <button onClick={() => scroll('right', scrollViewedRef)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white dark:bg-[#18181b] dark:text-gray-200 border border-gray-200 dark:border-gray-800 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-800">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -597,19 +598,19 @@ function Home() {
         {/* KHỐI 10: TIN TỨC CÔNG NGHỆ BẰNG DỮ LIỆU THẬT */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800 uppercase tracking-tight">Tin tức công nghệ</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 uppercase tracking-tight">Tin tức công nghệ</h2>
             <Link href="/tin-tuc" className="text-sm text-red-600 hover:underline font-medium">Xem tất cả tin tức</Link>
           </div>
           
           {newsList.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {newsList.slice(0, 5).map((news) => (
-                <Link key={news.id} href={`/tin-tuc/${news.slug}`} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:border-red-500/30 transition-all flex flex-col group">
-                  <div className="aspect-[16/10] overflow-hidden bg-gray-100">
+                <Link key={news.id} href={`/tin-tuc/${news.slug}`} className="bg-white dark:bg-[#18181b] rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-red-500/30 transition-all flex flex-col group">
+                  <div className="aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-gray-800">
                     <img src={news.imageUrl || "/placeholder.jpg"} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="p-3 flex-1 flex flex-col justify-between">
-                    <h3 className="text-xs font-bold text-gray-800 line-clamp-3 leading-snug group-hover:text-red-600 transition-colors">
+                    <h3 className="text-xs font-bold text-gray-800 dark:text-gray-100 line-clamp-3 leading-snug group-hover:text-red-600 transition-colors">
                       {news.title}
                     </h3>
                     <span className="text-[10px] text-muted-foreground mt-2 block font-medium">
@@ -625,12 +626,12 @@ function Home() {
         </div>
 
         {/* KHỐI 11: NỘI DUNG SEO - ĐÃ BỎ TIN TỨC LIÊN QUAN */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm relative flex flex-col justify-between mt-6">
-          <div className={`space-y-6 text-sm text-gray-600 leading-relaxed transition-all duration-300 pr-2
+        <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 md:p-6 shadow-sm relative flex flex-col justify-between mt-6">
+          <div className={`space-y-6 text-sm text-gray-600 dark:text-gray-300 leading-relaxed transition-all duration-300 pr-2
             ${isContentExpanded ? "max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200" : "max-h-[350px] overflow-hidden"}`}
           >
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">BlurSetup - Hệ thống cung cấp đồ công nghệ & Combo thiết kế không gian hàng đầu</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">BlurSetup - Hệ thống cung cấp đồ công nghệ & Combo thiết kế không gian hàng đầu</h2>
               <p>Thiết bị công nghệ và phụ kiện setup ngày nay đã trở thành một phần không thể thiếu đối với lập trình viên, game thủ và những người làm việc sáng tạo tại nhà. Không chỉ hỗ trợ nâng cao hiệu suất công việc, mà các sản phẩm này còn góp phần thể hiện phong cách và cá tính riêng của mỗi người.</p>
               <br/>
               <p>Tại BlurSetup, chúng tôi không chỉ đơn thuần bán lẻ từng thiết bị. Chúng tôi mang đến cho bạn giải pháp "setup toàn diện" - từ những chiếc bàn phím cơ Custom cao cấp, chuột gaming siêu nhẹ, đến màn hình hiển thị chuẩn màu cho Designer. Tất cả đều được tuyển chọn kỹ lưỡng từ các thương hiệu hàng đầu thế giới như ASUS, Logitech, Dell, LG...</p>
@@ -638,39 +639,39 @@ function Home() {
           </div>
 
           {!isContentExpanded && (
-            <div className="absolute bottom-[52px] left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10" />
+            <div className="absolute bottom-[52px] left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-[#18181b] via-white/80 dark:via-[#18181b]/80 to-transparent pointer-events-none z-10" />
           )}
 
-          <div className="relative flex justify-center mt-2 border-t border-gray-100 pt-3 z-20 bg-white">
-            <button onClick={() => setIsContentExpanded(!isContentExpanded)} className="flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-800 transition-colors bg-white px-4 py-1.5 border rounded-full shadow-sm">
+          <div className="relative flex justify-center mt-2 border-t border-gray-100 dark:border-gray-800 pt-3 z-20 bg-white dark:bg-[#18181b]">
+            <button onClick={() => setIsContentExpanded(!isContentExpanded)} className="flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-800 transition-colors bg-white dark:bg-[#18181b] px-4 py-1.5 border dark:border-gray-800 rounded-full shadow-sm">
               {isContentExpanded ? <> Thu gọn nội dung <ChevronUp className="w-3.5 h-3.5" /> </> : <> Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /> </>}
             </button>
           </div>
         </div>
 
         {/* KHỐI 12: HỎI ĐÁP Q&A (DỮ LIỆU THẬT) */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm space-y-6">
-          <div className="border-b border-gray-100 pb-3">
-            <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight flex items-center gap-2">
+        <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 md:p-6 shadow-sm space-y-6">
+          <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tight flex items-center gap-2">
               <HelpCircle className="h-5 w-5 text-red-600" /> Hỏi và đáp về sản phẩm & dịch vụ
             </h2>
           </div>
           
           {/* Ô Nhập câu hỏi */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
             <div className="hidden md:flex flex-col items-center text-center space-y-1">
               <div className="w-16 h-16 rounded-full bg-red-100 border border-red-200 flex items-center justify-center text-red-600 text-2xl font-black shadow-inner animate-pulse">B</div>
               <span className="text-[11px] font-bold text-gray-500">BlurBot</span>
             </div>
             <div className="md:col-span-3 space-y-3">
-              <div className="font-semibold text-sm text-gray-800">Hãy đặt câu hỏi cho chúng tôi</div>
-              <div className="relative flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden focus-within:border-red-600 focus-within:ring-1 focus-within:ring-red-600/20 transition-all shadow-inner">
+              <div className="font-semibold text-sm text-gray-800 dark:text-gray-100">Hãy đặt câu hỏi cho chúng tôi</div>
+              <div className="relative flex items-center bg-white dark:bg-[#09090b] border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden focus-within:border-red-600 focus-within:ring-1 focus-within:ring-red-600/20 transition-all shadow-inner">
                 <textarea 
                   rows={2} 
                   value={questionInput}
                   onChange={(e) => setQuestionInput(e.target.value)}
                   placeholder={session ? "Viết câu hỏi của bạn tại đây..." : "Vui lòng đăng nhập để đặt câu hỏi..."} 
-                  className="w-full p-3 text-sm text-gray-900 bg-transparent outline-none resize-none placeholder:text-gray-400 pr-24" 
+                  className="w-full p-3 text-sm text-gray-900 dark:text-gray-100 bg-transparent outline-none resize-none placeholder:text-gray-400 pr-24" 
                 />
                 <button 
                   onClick={handleAskQuestion}
@@ -686,7 +687,7 @@ function Home() {
           {/* Danh sách Hỏi Đáp */}
           <div className="space-y-6 pt-2">
             {questions.length > 0 ? questions.map((q) => (
-              <div key={q.id} className="space-y-4 border-b border-gray-50 pb-5 last:border-0 last:pb-0">
+              <div key={q.id} className="space-y-4 border-b border-gray-50 dark:border-gray-800 pb-5 last:border-0 last:pb-0">
                 
                 {/* Người hỏi */}
                 <div className="flex items-start gap-3">
@@ -695,10 +696,10 @@ function Home() {
                   </div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-gray-900">{q.user?.name || "Khách hàng"}</span>
+                      <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{q.user?.name || "Khách hàng"}</span>
                       <span className="text-[10px] text-gray-400 font-medium">{new Date(q.createdAt).toLocaleDateString('vi-VN')}</span>
                     </div>
-                    <p className="text-sm text-gray-700 leading-relaxed bg-gray-50/70 p-3 rounded-xl border border-gray-100/50">{q.content}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50/70 dark:bg-gray-800/70 p-3 rounded-xl border border-gray-100/50 dark:border-gray-700/50">{q.content}</p>
                     
                     {q.replies.length > 0 && (
                       <div className="flex items-center gap-3 pt-1 text-xs font-semibold text-red-600">
@@ -716,12 +717,12 @@ function Home() {
                     <div className="w-9 h-9 rounded-full bg-red-600 text-white font-black flex items-center justify-center text-[10px] shadow-md border border-red-200">BS</div>
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-gray-900 flex items-center gap-1.5">
+                        <span className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                           {r.user?.name || "Quản Trị Viên BlurSetup"} <ShieldCheck className="w-3 h-3 text-green-600" />
                         </span>
                         <span className="text-[10px] text-gray-400 font-medium">{new Date(r.createdAt).toLocaleDateString('vi-VN')}</span>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed bg-red-50/30 p-3 rounded-xl border border-red-100/50">{r.content}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-red-50/30 dark:bg-red-900/10 p-3 rounded-xl border border-red-100/50 dark:border-red-900/30">{r.content}</p>
                     </div>
                   </div>
                 ))}

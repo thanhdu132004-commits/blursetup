@@ -1,3 +1,4 @@
+// app/api/payment/momo/route.ts
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
@@ -5,27 +6,43 @@ export async function POST(req: Request) {
   try {
     const { orderId, amount, orderInfo } = await req.json();
 
-    // CÁC THÔNG SỐ NÀY LẤY TỪ PORTAL DOANH NGHIỆP MOMO (File .env)
-    const partnerCode = process.env.MOMO_PARTNER_CODE || "MOMOBKUN20180529";
-    const accessKey = process.env.MOMO_ACCESS_KEY || "klm05TvNCzjOaHU1";
-    const secretKey = process.env.MOMO_SECRET_KEY || "at67qH6mk8g5N1v2eb3yH28pM5J3p5d6";
+    const partnerCode = "MOMOBKUN20180529";
+    const accessKey = "klm05TvNBzhg7h7j";
+    const secretKey = "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
     const endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
 
-    const redirectUrl = "http://localhost:3000/orders"; // URL trả về sau khi thanh toán
-    const ipnUrl = "http://localhost:3000/api/payment/momo-ipn"; // URL Server nhận thông báo ngầm
+    // ĐÃ THÊM .trim() ĐỂ XÓA MỌI KHOẢNG TRẮNG DƯ THỪA TRƯỚC/SAU LINK
+    const domain = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").trim().replace(/\/$/, "");
+    
+    const redirectUrl = `${domain}/oder`; 
+    const ipnUrl = `${domain}/api/payment/momo-ipn`; 
+
     const requestType = "captureWallet";
     const extraData = "";
-    const requestId = partnerCode + new Date().getTime();
+    const requestId = orderId + "_" + new Date().getTime(); 
 
-    // Tạo chuỗi ký tự theo chuẩn MoMo yêu cầu
-    const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+    const amountStr = String(amount);
+
+    // TẠO CHỮ KÝ
+    const rawSignature = `accessKey=${accessKey}&amount=${amountStr}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
     
-    // Ký thuật toán HMAC SHA256
+    // Mã hóa HMAC SHA256
     const signature = crypto.createHmac("sha256", secretKey).update(rawSignature).digest("hex");
 
-    // Gửi yêu cầu sang MoMo
+    // Gửi yêu cầu sang hệ thống MoMo
     const requestBody = JSON.stringify({
-      partnerCode, accessKey, requestId, amount, orderId, orderInfo, redirectUrl, ipnUrl, extraData, requestType, signature, lang: "vi"
+      partnerCode, 
+      accessKey, 
+      requestId, 
+      amount: Number(amount), 
+      orderId, 
+      orderInfo, 
+      redirectUrl, 
+      ipnUrl, 
+      extraData, 
+      requestType, 
+      signature, 
+      lang: "vi"
     });
 
     const response = await fetch(endpoint, {
@@ -35,9 +52,16 @@ export async function POST(req: Request) {
     });
 
     const data = await response.json();
+    
+    if (data.resultCode !== 0) {
+        console.log("MoMo API Error:", data.message);
+        console.log("Raw Signature:", rawSignature); // In ra chuỗi để dễ debug
+    }
+
     return NextResponse.json(data);
 
   } catch (error) {
+    console.error("Lỗi Server gọi cổng MoMo:", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

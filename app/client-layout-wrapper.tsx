@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { SessionProvider } from "next-auth/react"; // 1. Import này
+import { BackToTop } from "@/components/back-to-top"; // 1. IMPORT COMPONENT MỚI
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
       {!isHiddenPage && <Navbar />}
       {children}
       {!isHiddenPage && <Footer />}
+      <BackToTop />
     </SessionProvider>
   );
 }

@@ -30,6 +30,7 @@ model User {
   reviews   Review[]
   questions Question[]
   replies   Reply[]
+  wishlist  String[] @db.ObjectId @default([]) // Lưu danh sách ID sản phẩm yêu thích
   
   // Quan hệ
   orders    Order[]
@@ -144,13 +145,18 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String  @db.ObjectId
-  productId String  @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
+  productId String?  @db.ObjectId   // Thêm dấu ? để cho phép sản phẩm bị trống
   quantity  Int
   price     Float
-  order     Order   @relation(fields: [orderId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
+  
+  // Thêm onDelete: Cascade để khi xóa đơn hàng thì xóa luôn OrderItem
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Thêm dấu ? và onDelete: SetNull để giữ lại lịch sử đơn hàng khi sản phẩm bị xóa
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull) 
+  
   createdAt DateTime @default(now())
 
   @@map("order_items")
@@ -197,6 +203,7 @@ model Review {
   rating    Int      @default(5)
   comment   String
   createdAt DateTime @default(now())
+  images    String[] @default([]) // Lưu mảng URL/Base64 của hình ảnh đánh giá
 
   // Quan hệ
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -234,4 +241,26 @@ model Reply {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("replies")
+}
+
+//
+// =========================
+// SETTING (CÀI ĐẶT HỆ THỐNG)
+// =========================
+//
+
+model Setting {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  isGlobal          Boolean  @default(true) @unique
+  
+  // Cấu hình vận chuyển
+  defaultFee        Int      @default(30000)
+  freeshipThreshold Int      @default(1000000)
+  
+  // Danh sách Vouchers (Lưu dưới dạng chuỗi JSON cho linh hoạt)
+  vouchers          Json     @default("[]")
+  
+  updatedAt         DateTime @updatedAt
+
+  @@map("settings")
 }

@@ -4,7 +4,8 @@ import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import ClientLayoutWrapper from "./client-layout-wrapper";
-import { FloatingContact } from "@/components/floating-contact"; // 1. IMPORT COMPONENT CHAT
+import { FloatingContact } from "@/components/floating-contact";
+import { ThemeProvider } from "@/components/theme-provider"; // Đã import ThemeProvider
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,17 +16,25 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
+    // suppressHydrationWarning cần thiết khi sử dụng next-themes để tránh cảnh báo console
     <html lang="vi" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <ClientLayoutWrapper>
+      <body className={inter.className} suppressHydrationWarning>
+        {/* Bọc toàn bộ ứng dụng bằng ThemeProvider */}
+        <ThemeProvider 
+          attribute="class" 
+          defaultTheme="system" 
+          enableSystem
+        >
+          <ClientLayoutWrapper>
             {children}
-        </ClientLayoutWrapper>
-        
-        {/* 2. CHÈN NÚT CHAT VÀO ĐÂY */}
-        <FloatingContact />
-        
-        {/* Toast Notification */}
-        <Toaster position="top-right" reverseOrder={false} />
+          </ClientLayoutWrapper>
+          
+          {/* Nút Chat nổi */}
+          <FloatingContact />
+          
+          {/* Toast Notification */}
+          <Toaster position="top-right" reverseOrder={false} />
+        </ThemeProvider>
       </body>
     </html>
   );

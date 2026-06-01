@@ -4,12 +4,13 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+// 1. Lấy danh sách đánh giá
 export async function getReviewsByProductId(productId: string) {
   try {
     const reviews = await prisma.review.findMany({
       where: { productId },
-      include: { user: true }, // Lấy luôn thông tin người đánh giá (Tên, Avatar...)
-      orderBy: { createdAt: 'desc' } // Mới nhất lên đầu
+      include: { user: true }, 
+      orderBy: { createdAt: 'desc' }
     });
     return reviews;
   } catch (error) {
@@ -18,11 +19,24 @@ export async function getReviewsByProductId(productId: string) {
   }
 }
 
-export async function submitReview(productId: string, userId: string, rating: number, comment: string) {
+// 2. Gửi đánh giá mới (Đã hỗ trợ lưu Mảng hình ảnh)
+export async function submitReview(
+  productId: string, 
+  userId: string, 
+  rating: number, 
+  comment: string, 
+  images: string[] // Thêm mảng hình ảnh vào tham số
+) {
   try {
-    // 1. Tạo đánh giá mới
+    // 1. Tạo đánh giá mới (bao gồm cả mảng hình ảnh)
     await prisma.review.create({
-      data: { productId, userId, rating, comment }
+      data: { 
+        productId, 
+        userId, 
+        rating, 
+        comment,
+        images // Lưu mảng hình ảnh vào Database
+      }
     });
 
     // 2. Tính toán lại Rating trung bình và Cập nhật vào Product
@@ -37,7 +51,7 @@ export async function submitReview(productId: string, userId: string, rating: nu
     });
 
     // 3. Xóa cache trang để hiển thị đánh giá mới ngay lập tức
-    revalidatePath(`/`); 
+    revalidatePath(`/product/[slug]`); 
     return { success: true };
   } catch (error) {
     console.error("Lỗi gửi đánh giá:", error);
