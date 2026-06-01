@@ -11,8 +11,13 @@ import { getAnalyticsData } from "./actions";
 
 // Format tiền tệ chuẩn VNĐ
 const formatCurrency = (value: number) => new Intl.NumberFormat("vi-VN").format(value) + " ₫";
-// Format số lớn (Rút gọn hàng triệu) cho cột Y-Axis
-const formatCompactYAxis = (value: number) => value >= 1000000 ? (value / 1000000) + "Tr" : value;
+
+// Format số lớn (Rút gọn hàng triệu/nghìn) cho cột Y-Axis (ĐÃ FIX: Bắt buộc trả về string)
+const formatCompactYAxis = (value: number): string => {
+  if (value >= 1000000) return (value / 1000000) + "Tr";
+  if (value >= 1000) return (value / 1000) + "K";
+  return value.toString();
+};
 
 function AnalyticsPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -109,7 +114,7 @@ function AnalyticsPage() {
             
             {revenueData.length > 0 ? (
               <div className="w-full h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={350}>
                   <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorDoanhThu" x1="0" y1="0" x2="0" y2="1">
@@ -123,6 +128,7 @@ function AnalyticsPage() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-800" />
                     <XAxis dataKey="name" fontSize={12} tickMargin={10} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
+                    {/* YAxis TRÁI & PHẢI SỬ DỤNG formatCompactYAxis (String Type) */}
                     <YAxis yAxisId="left" fontSize={11} tickFormatter={formatCompactYAxis} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
                     <YAxis yAxisId="right" orientation="right" fontSize={11} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
                     
@@ -156,7 +162,7 @@ function AnalyticsPage() {
               </div>
               {productData.length > 0 ? (
                 <div className="w-full h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={productData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-800" />
                       <XAxis dataKey="name" fontSize={11} tickMargin={10} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
@@ -179,7 +185,7 @@ function AnalyticsPage() {
               </div>
               {statusData.length > 0 ? (
                 <div className="w-full flex-1 min-h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height={280}>
                     <PieChart>
                       <Pie
                         data={statusData}
@@ -196,7 +202,7 @@ function AnalyticsPage() {
                         ))}
                       </Pie>
                       <RechartsTooltip 
-                        formatter={(value: number) => [value + " đơn hàng", "Số lượng"]}
+                        formatter={(value: any) => [value + " đơn hàng", "Số lượng"]}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       />
                       <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold' }} />
