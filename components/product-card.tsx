@@ -8,18 +8,20 @@ import { addToCart } from "@/app/actions/cart";
 import { toggleWishlist, getUserWishlist } from "@/app/actions/wishlist";
 import toast from "react-hot-toast";
 
-// === KỸ THUẬT TỐI ƯU (PROMISE CACHING) ===
+// === KỸ THUẬT TỐI ƯU (PROMISE CACHING VỚI STATIC CACHE) ===
 // Giúp 30 thẻ sản phẩm chỉ gọi API 1 lần duy nhất thay vì 30 lần
-let sharedWishlistPromise: Promise<string[]> | null = null;
-let cachedUserId: string | null = null;
+const WishlistCache = {
+  promise: null as Promise<string[]> | null,
+  cachedUserId: null as string | null,
+};
 
 const getSharedWishlist = (userId: string) => {
-  if (sharedWishlistPromise && cachedUserId === userId) {
-    return sharedWishlistPromise;
+  if (WishlistCache.promise && WishlistCache.cachedUserId === userId) {
+    return WishlistCache.promise;
   }
-  cachedUserId = userId;
-  sharedWishlistPromise = getUserWishlist(userId).catch(() => []);
-  return sharedWishlistPromise;
+  WishlistCache.cachedUserId = userId;
+  WishlistCache.promise = getUserWishlist(userId).catch(() => []);
+  return WishlistCache.promise;
 };
 // ==========================================
 
@@ -35,6 +37,7 @@ export interface Product {
   isFeatured?: boolean;
   category?: string;
   brand?: string;
+  condition?: string;
 }
 
 export function ProductCard({ product }: { product: Product }) {
@@ -103,7 +106,7 @@ export function ProductCard({ product }: { product: Product }) {
       toast.error("Lỗi khi cập nhật yêu thích!");
     } else {
       // Cập nhật lại Cache toàn cục để các trang khác nhận diện đúng
-      sharedWishlistPromise = Promise.resolve(res.wishlist);
+      WishlistCache.promise = Promise.resolve(res.wishlist as string[]);
       if (!previousState) toast.success("Đã thêm vào danh sách yêu thích ♥️");
     }
   };

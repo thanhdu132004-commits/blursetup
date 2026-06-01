@@ -46,12 +46,12 @@ export async function POST(req: Request) {
              // 2. Vòng lặp trừ Tồn kho và tăng Lượt bán cho từng sản phẩm
              for (const item of existingOrder.items) {
                  await tx.product.update({
-                     where: { id: item.productId },
-                     data: {
-                         stock: { decrement: item.quantity }, // Trừ số lượng kho
-                         sold: { increment: item.quantity }   // Tăng lượt bán
-                     }
-                 });
+                    where: { id: String(item.productId) }, // Ép kiểu productId sang string chắc chắn
+                    data: {
+                        stock: { decrement: item.quantity },
+                        sold: { increment: item.quantity }
+                    }
+                });
              }
          });
          console.log("✅ MoMo IPN: Đã cập nhật trạng thái & trừ tồn kho thành công!");

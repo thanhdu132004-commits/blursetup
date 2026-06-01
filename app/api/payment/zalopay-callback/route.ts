@@ -47,13 +47,13 @@ export async function POST(req: Request) {
 
                  // 2. Trừ tồn kho & tăng lượt bán
                  for (const item of existingOrder.items) {
-                     await tx.product.update({
-                         where: { id: item.productId },
-                         data: {
-                             stock: { decrement: item.quantity },
-                             sold: { increment: item.quantity }
-                         }
-                     });
+                    await tx.product.update({
+                        where: { id: String(item.productId) }, // Ép kiểu productId sang string chắc chắn
+                        data: {
+                            stock: { decrement: item.quantity },
+                            sold: { increment: item.quantity }
+                        }
+                    });
                  }
              });
              console.log("✅ ZaloPay: Đã cập nhật trạng thái & trừ tồn kho thành công!");

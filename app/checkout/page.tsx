@@ -45,30 +45,39 @@ function CheckoutPage() {
       const userId = (session?.user as any)?.id || "6a0de954edad2fe7af807713";
       const response = await getCart(userId);
       
-      if (response.success && response.data.items.length > 0) {
-        let itemsToCheckout = response.data.items;
+      // Sử dụng 'as any' để bỏ qua kiểm tra cấu trúc nghiêm ngặt của TypeScript cho response từ server
+      const cartData = response?.data as any;
+
+      if (response?.success && cartData?.items && cartData.items.length > 0) {
+        let itemsToCheckout = cartData.items;
         const buyNowProductId = sessionStorage.getItem("buyNowProductId");
         const selectedCartItemsStr = sessionStorage.getItem("selectedCartItems");
 
         if (buyNowProductId) {
-            itemsToCheckout = itemsToCheckout.filter((item: any) => 
-                item.product.id === buyNowProductId || 
-                item.product._id === buyNowProductId ||
-                item.productId === buyNowProductId
-            );
+          itemsToCheckout = itemsToCheckout.filter((item: any) => 
+            item.product?.id === buyNowProductId || 
+            item.product?._id === buyNowProductId ||
+            item.productId === buyNowProductId
+          );
         } else if (selectedCartItemsStr) {
+          try {
             const selectedIds = JSON.parse(selectedCartItemsStr);
             itemsToCheckout = itemsToCheckout.filter((item: any) => selectedIds.includes(item.id));
+          } catch (e) {
+            console.error("Lỗi parse JSON selectedCartItems:", e);
+          }
         }
 
         if (itemsToCheckout.length === 0) {
-            toast.error("Không có sản phẩm nào được chọn!");
-            router.push("/cart");
-            return;
+          toast.error("Không có sản phẩm nào được chọn!");
+          router.push("/cart");
+          return;
         }
-        setCart({ ...response.data, items: itemsToCheckout });
+        
+        // Cập nhật state với dữ liệu đã lọc
+        setCart({ ...cartData, items: itemsToCheckout });
       } else {
-        toast.error("Giỏ hàng trống!");
+        toast.error("Giỏ hàng trống hoặc có lỗi xảy ra!");
         router.push("/cart");
       }
     };

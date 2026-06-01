@@ -77,29 +77,27 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
         data: { status: targetStatus }
       });
 
-      // THÀNH PHẦN B: LUỒNG TRỪ TỒN KHO KHI XÁC NHẬN ĐƠN
-      // Điều kiện: Chuyển từ "Chờ xác nhận" sang "Đang xử lý"
+      // VỊ TRÍ 1 (THÀNH PHẦN B)
       if (oldStatus === "Chờ xác nhận" && targetStatus === "Đang xử lý") {
-        for (const item of currentOrder.items) {
+        for (const item of currentOrder.items as any[]) { // Thêm 'as any[]' để bỏ qua kiểm tra chặt chẽ
           await tx.product.update({
             where: { id: item.productId },
             data: {
-              stock: { decrement: item.quantity }, // Trừ kho hàng thực tế
-              sold: { increment: item.quantity }   // Tăng chỉ số lượt bán
+              stock: { decrement: item.quantity },
+              sold: { increment: item.quantity }
             }
           });
         }
       }
 
-      // THÀNH PHẦN C: LUỒNG CỘNG HOÀN KHO KHI HỦY ĐƠN HÀNG
-      // Điều kiện: Đơn hàng trước đó đã được xác nhận (đã trừ kho) và giờ chuyển sang trạng thái "Đã hủy"
+      // VỊ TRÍ 2 (THÀNH PHẦN C)
       if (targetStatus === "Đã hủy" && ["Đang xử lý", "Đang giao", "Đã giao"].includes(oldStatus)) {
-        for (const item of currentOrder.items) {
+        for (const item of currentOrder.items as any[]) { // Thêm 'as any[]' tại đây nữa
           await tx.product.update({
             where: { id: item.productId },
             data: {
-              stock: { increment: item.quantity }, // Trả hàng lại về kho kho
-              sold: { decrement: item.quantity }   // Hạ lượt bán ảo xuống
+              stock: { increment: item.quantity },
+              sold: { decrement: item.quantity }
             }
           });
         }

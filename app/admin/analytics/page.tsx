@@ -133,10 +133,11 @@ function AnalyticsPage() {
                     <YAxis yAxisId="right" orientation="right" fontSize={11} axisLine={false} tickLine={false} tick={{fill: '#9ca3af'}} />
                     
                     <RechartsTooltip 
-                      formatter={(value: any, name: string) => [
-                        name === "doanh_thu" ? formatCurrency(value) : value + " đơn", 
-                        name === "doanh_thu" ? "Doanh thu" : "Số đơn hàng"
-                      ]}
+                      formatter={(value: any, name: any) => {
+                        const displayValue = name === "doanh_thu" ? formatCurrency(value) : value + " đơn";
+                        const displayName = name === "doanh_thu" ? "Doanh thu" : "Số đơn hàng";
+                        return [displayValue, displayName];
+                      }}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: '#fff' }}
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '10px' }} />

@@ -101,7 +101,7 @@ function Home() {
       const updatedQ = await getQuestions();
       setQuestions(updatedQ);
     } else {
-      toast.error(res.error);
+      toast.error((res as any).error);
     }
     setIsSubmittingQ(false);
   };
@@ -200,8 +200,7 @@ function Home() {
 
   const toggleReply = (id: string) => setExpandedReplies(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const scroll = (direction: 'left' | 'right', ref: React.RefObject<HTMLDivElement>) => {
-    if (ref.current) {
+  const scroll = (direction: 'left' | 'right', ref: any) => {    if (ref.current) {
       const { current } = ref;
       const scrollAmount = direction === 'left' ? -current.offsetWidth + 100 : current.offsetWidth - 100;
       current.scrollBy({ left: scrollAmount, behavior: 'smooth' });

@@ -38,9 +38,13 @@ export default function CategoryPage() {
       setLoading(true);
       try {
         const data = await getProducts();
-        
+        // Ép kiểu data thành mảng Product để TypeScript hiểu rõ cấu trúc
+        const productData = data as Product[]; 
+
         // Lấy toàn bộ sản phẩm đúng Danh mục hiện tại
-        const filtered = data.filter((p: any) => p.category?.toLowerCase().trim() === categoryName?.toLowerCase().trim());
+        const filtered = productData.filter((p) => 
+          p.category?.toLowerCase().trim() === categoryName?.toLowerCase().trim()
+        );
         setAllProducts(filtered);
 
         // Trích xuất TỰ ĐỘNG danh sách thương hiệu CHỈ từ các sản phẩm thuộc danh mục này
@@ -61,16 +65,16 @@ export default function CategoryPage() {
     }
   }, [categoryName]);
 
-  // LOGIC LỌC SẢN PHẨM Ở FRONTEND
+// LOGIC LỌC SẢN PHẨM Ở FRONTEND
   const displayedProducts = useMemo(() => {
     let result = [...allProducts];
 
-    // 1. Lọc theo Thương hiệu
+    // 1. Lọc theo Thương hiệu (thêm kiểm tra an toàn)
     if (selectedBrands.length > 0) {
-      result = result.filter(p => selectedBrands.includes(p.brand));
+      result = result.filter(p => p.brand && selectedBrands.includes(p.brand));
     }
 
-    // 2. Lọc theo Tình trạng (Mới/Cũ)
+    // 2. Lọc theo Tình trạng (thêm kiểm tra an toàn)
     if (selectedCondition) {
       result = result.filter(p => p.condition === selectedCondition);
     }
@@ -78,11 +82,12 @@ export default function CategoryPage() {
     // 3. Lọc theo Khoảng giá
     if (selectedPrice) {
       result = result.filter(p => {
-        if (selectedPrice === "under-10") return p.price < 10000000;
-        if (selectedPrice === "10-15") return p.price >= 10000000 && p.price <= 15000000;
-        if (selectedPrice === "15-20") return p.price >= 15000000 && p.price <= 20000000;
-        if (selectedPrice === "20-25") return p.price >= 20000000 && p.price <= 25000000;
-        if (selectedPrice === "above-25") return p.price > 25000000;
+        const price = p.price || 0;
+        if (selectedPrice === "under-10") return price < 10000000;
+        if (selectedPrice === "10-15") return price >= 10000000 && price <= 15000000;
+        if (selectedPrice === "15-20") return price >= 15000000 && price <= 20000000;
+        if (selectedPrice === "20-25") return price >= 20000000 && price <= 25000000;
+        if (selectedPrice === "above-25") return price > 25000000;
         return true;
       });
     }
