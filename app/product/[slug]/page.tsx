@@ -1,27 +1,55 @@
+// app/product/[slug]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { addToCart } from "@/app/actions/cart";
 import toast from "react-hot-toast";
 import { getReviewsByProductId, submitReview } from "@/app/actions/review"; 
-import { useRouter } from "next/navigation"; 
+import { submitRestockRequest, getRestockRequestsByProduct } from "@/app/actions/restock"; 
 import { 
   Star, ChevronRight, ShoppingCart, Gift, ShieldCheck, 
   ThumbsUp, MessageCircle, Send, CheckCircle2, ChevronDown, User as UserIcon,
-  MapPin, Truck, RefreshCcw, Wrench, Headphones, Plus, X
+  MapPin, Truck, RefreshCcw, Wrench, Headphones, Plus, X, Zap, Flame, PhoneCall
 } from "lucide-react";
 
 import { getProductBySlug, getProducts } from "@/app/admin/products/actions";
 import { getNews } from "@/app/admin/news/actions"; 
 
+// Giữ lại MOCK cho Reviews YouTube
+const MOCK_REVIEWS = [
+  { 
+    title: "ASUS ROG Strix SCAR 18 2025 - gaming laptop with RTX 5090", 
+    channel: "BlurReview", 
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiuittbeZxeM9xdntdgPbWi2mxv30dZ9hBUNFmufOZNQ&s=10",
+    youtubeUrl: "https://www.youtube.com/shorts/_WFMEICAYhw?feature=share"
+  },
+  { 
+    title: "Laptop HP Omnibook X: Chip Snapdragon X Elite có thực sự bá chủ?", 
+    channel: "BlurReview", 
+    imageUrl: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&q=80",
+    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  { 
+    title: "Trải nghiệm Apple Watch Ultra 3: Màn hình OLED này quá đỉnh", 
+    channel: "BlurReview", 
+    imageUrl: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&q=80",
+    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  { 
+    title: "Lenovo Legion Go 2: Cỗ máy gaming cầm tay đáng mua nhất hiện tại", 
+    channel: "BlurReview", 
+    imageUrl: "https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=400&q=80",
+    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+];
+
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const { data: session } = useSession();
-
   const router = useRouter(); 
   
   // STATE CƠ BẢN
@@ -36,13 +64,20 @@ export default function ProductDetailPage() {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [isAddingCart, setIsAddingCart] = useState(false);
 
+  // STATE ĐĂNG KÝ NHẬN THÔNG TIN (HẾT HÀNG)
+  const [showRegisteredUsers, setShowRegisteredUsers] = useState(false);
+  const [registeredUsers, setRegisteredUsers] = useState<any[]>([]); 
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registerForm, setRegisterForm] = useState({ name: "", phone: "", email: "", location: "Bà Rịa - Vũng Tàu" });
+
   // STATE CHO FORM ĐÁNH GIÁ
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [reviewImages, setReviewImages] = useState<string[]>([]);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  // --- BUNDLE DEALS STATE ---
+  
+  // BUNDLE DEALS STATE
   const [bundleProducts, setBundleProducts] = useState<any[]>([]);
   const [selectedBundleIds, setSelectedBundleIds] = useState<string[]>([]);
 
@@ -62,7 +97,7 @@ export default function ProductDetailPage() {
     setIsAddingCart(false);
   };
 
-  // Hàm xử lý chọn ảnh
+  // Hàm xử lý chọn ảnh review
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (reviewImages.length + files.length > 2) {
@@ -107,7 +142,6 @@ export default function ProductDetailPage() {
     setIsSubmittingReview(true);
     const userId = (session?.user as any)?.id || "6a0de954edad2fe7af807713"; 
     
-    // Đã cập nhật để gửi ảnh đi
     const res = await submitReview(product.id, userId, rating, comment, reviewImages);
     if (res.success) {
       toast.success("Cảm ơn bạn! Đánh giá đã được ghi nhận.", {
@@ -126,6 +160,24 @@ export default function ProductDetailPage() {
       toast.error("Có lỗi: " + res.error);
     }
     setIsSubmittingReview(false);
+  };
+
+  // HÀM GỬI ĐĂNG KÝ HÀNG THẬT
+  const handleRegisterRestock = async () => {
+    if (!registerForm.name || !registerForm.phone) {
+      return toast.error("Vui lòng nhập họ tên và số điện thoại!");
+    }
+    setIsRegistering(true);
+    const res = await submitRestockRequest({ ...registerForm, productId: product.id });
+    if (res.success) {
+      toast.success("Đăng ký nhận thông tin thành công!");
+      setRegisterForm({ name: "", phone: "", email: "", location: "Bà Rịa - Vũng Tàu" });
+      const updatedRequests = await getRestockRequestsByProduct(product.id);
+      setRegisteredUsers(updatedRequests);
+    } else {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+    }
+    setIsRegistering(false);
   };
 
   // --- HÀM THÊM CẢ COMBO VÀO GIỎ HÀNG ---
@@ -172,16 +224,17 @@ export default function ProductDetailPage() {
 
         const fetchedReviews = await getReviewsByProductId(data.id);
         setReviews(fetchedReviews);
+
+        const reqs = await getRestockRequestsByProduct(data.id);
+        setRegisteredUsers(reqs);
       }
 
       const [allProducts, allNews] = await Promise.all([ getProducts(), getNews() ]);
 
       if (data) {
-        // 1. SẢN PHẨM LIÊN QUAN
         const related = allProducts.filter((p: any) => p.category === data.category && p.id !== data.id).slice(0, 4);
         setRelatedProducts(related);
         
-        // 2. THUẬT TOÁN GỢI Ý MUA KÈM
         let targetCategories: string[] = [];
         switch (data.category) {
           case "Laptop": targetCategories = ["Phụ kiện", "Chuột", "Bàn phím"]; break;
@@ -229,9 +282,10 @@ export default function ProductDetailPage() {
   if (!product) return <div className="min-h-screen bg-gray-50 dark:bg-[#09090b] flex items-center justify-center font-bold text-gray-500">Không tìm thấy sản phẩm này.</div>;
 
   const allImages = [product.imageUrl, ...(product.gallery || [])].filter(Boolean);
+  const isOutOfStock = product.stock <= 0;
 
   return (
-    <div className="bg-gray-50 dark:bg-[#09090b] min-h-screen pb-32 transition-colors duration-300">
+    <div className="bg-gray-50 dark:bg-[#09090b] min-h-screen pb-32 transition-colors duration-300 relative">
       {/* BREADCRUMB */}
       <div className="max-w-[1200px] mx-auto px-4 py-3 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
         <Link href="/" className="hover:text-red-600 dark:hover:text-red-400">Trang chủ</Link> <ChevronRight className="w-3 h-3" />
@@ -259,7 +313,8 @@ export default function ProductDetailPage() {
             {/* CỘT TRÁI: HÌNH ẢNH */}
             <div className="lg:col-span-6 flex flex-col gap-6">
               <div className="w-full flex flex-col items-center gap-4">
-                <div className="w-full max-w-md aspect-square rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-4 flex items-center justify-center">
+                <div className="w-full max-w-md aspect-square rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-4 flex items-center justify-center relative">
+                  {/* ĐÃ XÓA LAYER MỜ VÀ CHỮ SẮP VỀ HÀNG Ở ĐÂY */}
                   <img src={allImages[activeImg]} className="max-w-full max-h-full object-contain mix-blend-multiply dark:mix-blend-normal transition-all duration-300" alt={product.name} />
                 </div>
                 {allImages.length > 1 && (
@@ -294,6 +349,14 @@ export default function ProductDetailPage() {
             {/* CỘT PHẢI: GIÁ, NÚT MUA & THÔNG SỐ */}
             <div className="lg:col-span-6 space-y-6">
               <div className="flex flex-col border-b border-gray-100 dark:border-gray-800 pb-4">
+                
+                {product.isFlashSale && (
+                  <div className="flex items-center gap-2 mb-3 bg-gradient-to-r from-[#d70018] to-orange-500 w-max px-3 py-1.5 rounded-lg shadow-md border border-red-400/50">
+                    <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300 animate-pulse drop-shadow-md" />
+                    <span className="text-xs font-black text-white uppercase tracking-wider drop-shadow-md">Flash Sale - Giờ Vàng Giá Sốc</span>
+                  </div>
+                )}
+
                 <div className="flex items-end gap-4">
                   <span className="text-4xl font-black text-red-600 dark:text-red-500">{Number(product.price).toLocaleString("vi-VN")}₫</span>
                   {product.originalPrice && product.originalPrice > product.price && (
@@ -304,33 +367,116 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-sm font-medium">
+              <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
                 <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-300">Tình trạng: <strong className="text-gray-900 dark:text-white">{product.condition}</strong></span>
-                <span className="px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg">Kho: <strong>{product.stock > 0 ? `Còn ${product.stock} sản phẩm` : "Hết hàng"}</strong></span>
+                
+                {isOutOfStock ? (
+                  <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg font-bold">Kho: Sắp về hàng</span>
+                ) : (
+                  <span className="px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg">Kho: <strong>Còn {product.stock} sản phẩm</strong></span>
+                )}
+                
+                {product.isFlashSale && !isOutOfStock && (
+                  <span className="px-3 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-500 rounded-lg font-bold flex items-center gap-1">
+                    <Flame className="w-4 h-4" /> Đang HOT
+                  </span>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-2">
-                <button 
-                  disabled={product.stock <= 0 || isAddingCart}
-                  onClick={handleBuyNow} 
-                  className="bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl flex flex-col items-center justify-center transition-colors shadow-lg shadow-red-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed group"
-                >
-                  <span className="font-black uppercase text-base md:text-lg group-hover:scale-105 transition-transform">
-                    {isAddingCart ? "Đang xử lý..." : "Mua Ngay"}
-                  </span>
-                  <span className="text-[10px] opacity-90 hidden sm:block">Giao tận nơi hoặc nhận tại shop</span>
-                </button>
-                <button 
-                  disabled={product.stock <= 0 || isAddingCart}
-                  onClick={handleAddToCart}
-                  className="bg-white dark:bg-[#18181b] border-2 border-red-600 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 py-4 rounded-xl flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
-                >
-                  <ShoppingCart className="w-6 h-6 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="font-black text-sm uppercase">
-                    {isAddingCart ? "Đang thêm..." : "Thêm vào giỏ"}
-                  </span>
-                </button>
-              </div>
+              {/* THAY ĐỔI FORM MUA HÀNG VÀ ĐĂNG KÝ HẾT HÀNG */}
+              {!isOutOfStock ? (
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <button 
+                    disabled={isAddingCart}
+                    onClick={handleBuyNow} 
+                    className="bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl flex flex-col items-center justify-center transition-colors shadow-lg shadow-red-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed group"
+                  >
+                    <span className="font-black uppercase text-base md:text-lg group-hover:scale-105 transition-transform">
+                      {isAddingCart ? "Đang xử lý..." : "Mua Ngay"}
+                    </span>
+                    <span className="text-[10px] opacity-90 hidden sm:block">Giao tận nơi hoặc nhận tại shop</span>
+                  </button>
+                  <button 
+                    disabled={isAddingCart}
+                    onClick={handleAddToCart}
+                    className="bg-white dark:bg-[#18181b] border-2 border-red-600 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 py-4 rounded-xl flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+                  >
+                    <ShoppingCart className="w-6 h-6 mb-1 group-hover:scale-110 transition-transform" />
+                    <span className="font-black text-sm uppercase">
+                      {isAddingCart ? "Đang thêm..." : "Thêm vào giỏ"}
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 md:p-5 border border-gray-200 dark:border-gray-800 space-y-4">
+                  <div className="text-center space-y-1">
+                    <h3 className="font-black text-lg text-gray-900 dark:text-white uppercase">SẮP VỀ HÀNG</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                      <PhoneCall className="w-3.5 h-3.5" /> (Vui lòng liên hệ <span className="font-bold text-red-600">1800.2097</span>)
+                    </p>
+                  </div>
+                  
+                  <div className="text-center font-bold text-sm text-gray-800 dark:text-gray-200">Đăng ký nhận thông tin khi có hàng</div>
+                  
+                  <div className="space-y-3">
+                    <input 
+                      type="text" 
+                      placeholder="Họ tên (*bắt buộc)" 
+                      value={registerForm.name}
+                      onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                      className="w-full p-3 bg-white dark:bg-[#18181b] border border-gray-300 dark:border-gray-700 rounded-lg text-sm outline-none focus:border-red-500 dark:text-white"
+                    />
+                    <input 
+                      type="tel" 
+                      placeholder="Số điện thoại (bắt buộc)" 
+                      value={registerForm.phone}
+                      onChange={(e) => setRegisterForm({...registerForm, phone: e.target.value})}
+                      className="w-full p-3 bg-white dark:bg-[#18181b] border border-gray-300 dark:border-gray-700 rounded-lg text-sm outline-none focus:border-red-500 dark:text-white"
+                    />
+                    <input 
+                      type="email" 
+                      placeholder="Địa chỉ email (để nhận phản hồi qua email)" 
+                      value={registerForm.email}
+                      onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                      className="w-full p-3 bg-white dark:bg-[#18181b] border border-gray-300 dark:border-gray-700 rounded-lg text-sm outline-none focus:border-red-500 dark:text-white"
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Ghi chú / Khu vực (VD: Bà Rịa - Vũng Tàu)" 
+                      value={registerForm.location}
+                      onChange={(e) => setRegisterForm({...registerForm, location: e.target.value})}
+                      className="w-full p-3 bg-white dark:bg-[#18181b] border border-gray-300 dark:border-gray-700 rounded-lg text-sm outline-none focus:border-red-500 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    <button 
+                      onClick={handleRegisterRestock}
+                      disabled={isRegistering}
+                      className="w-full py-3 bg-[#d70018] hover:bg-red-700 text-white rounded-lg font-bold text-sm transition-colors disabled:opacity-50"
+                    >
+                      {isRegistering ? "Đang gửi..." : "Đăng ký nhận thông tin"}
+                    </button>
+                    <Link href="/">
+                    <button 
+                      className="w-full py-3 bg-white dark:bg-transparent border border-[#d70018] text-[#d70018] rounded-lg font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      Xem thêm sản phẩm khác
+                    </button>
+                    </Link>
+                  </div>
+                  
+                  <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    Có <strong>{registeredUsers.length}</strong> khách hàng đã đăng ký.{' '}
+                    <span 
+                      onClick={() => setShowRegisteredUsers(true)}
+                      className="text-red-600 cursor-pointer hover:underline"
+                    >
+                      Xem danh sách
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* THÔNG TIN VẬN CHUYỂN */}
               <div className="bg-white dark:bg-[#18181b] border border-gray-100 dark:border-gray-800 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
@@ -393,7 +539,7 @@ export default function ProductDetailPage() {
                       {Object.keys(product.specs).map((key, i) => (
                         <div key={i} className={`flex items-start p-3 ${i % 2 === 0 ? 'bg-gray-50 dark:bg-gray-800/30' : 'bg-white dark:bg-[#18181b]'}`}>
                           <div className="w-1/3 font-bold text-gray-500 dark:text-gray-400">{key}</div>
-                          <div className="w-2/3 font-bold text-gray-900 dark:text-gray-200">{product.specs[key]}</div>
+                          <div className="w-2/3 font-bold text-gray-900 dark:text-gray-200 whitespace-pre-wrap">{product.specs[key]}</div>
                         </div>
                       ))}
                     </div>
@@ -404,8 +550,8 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* --- ƯU ĐÃI MUA KÈM (BUNDLE DEALS) --- */}
-        {bundleProducts.length > 0 && (
+        {/* --- ƯU ĐÃI MUA KÈM (BUNDLE DEALS) --- (ẨN KHI HẾT HÀNG) */}
+        {!isOutOfStock && bundleProducts.length > 0 && (
           <div className="bg-gradient-to-r from-red-50 dark:from-red-900/10 to-orange-50 dark:to-orange-900/10 rounded-2xl p-5 md:p-6 border border-red-100 dark:border-red-900/30 shadow-sm">
             <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase mb-5 flex items-center gap-2">
               <Gift className="w-5 h-5 text-red-600 dark:text-red-500" /> Ưu đãi mua kèm (Combo Tiết Kiệm)
@@ -535,6 +681,13 @@ export default function ProductDetailPage() {
                 return (
                   <Link href={`/product/${rp.slug || rp.id}`} key={rp.id} className="border border-gray-100 dark:border-gray-800 rounded-xl p-3 hover:shadow-lg transition-shadow bg-white dark:bg-[#18181b] relative group flex flex-col">
                     {discount > 0 && <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-md z-10 shadow-sm">Giảm {discount}%</span>}
+                    
+                    {rp.isFlashSale && (
+                      <span className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black px-2 py-1 rounded-md z-10 shadow-sm flex items-center gap-1">
+                        <Zap className="w-3 h-3 fill-yellow-300 text-yellow-300" /> Flash Sale
+                      </span>
+                    )}
+
                     <div className="w-full aspect-square mb-3 relative flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg p-2 overflow-hidden">
                        <img src={rp.imageUrl} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-500" alt={rp.name} />
                     </div>
@@ -610,7 +763,6 @@ export default function ProductDetailPage() {
                   </div>
               </div>
               
-              {/* --- PHẦN 4: FORM NHẬP ĐÁNH GIÁ & UPLOAD ẢNH --- */}
               <textarea 
                 rows={3} 
                 value={comment}
@@ -639,7 +791,6 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </div>
-              {/* --- KẾT THÚC PHẦN 4 --- */}
 
               <div className="flex justify-end gap-2">
                 <button 
@@ -682,7 +833,6 @@ export default function ProductDetailPage() {
                 
                 <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mt-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">{review.comment}</p>
                 
-                {/* --- PHẦN 5: HIỂN THỊ ẢNH ĐÁNH GIÁ --- */}
                 {review.images && review.images.length > 0 && (
                   <div className="flex gap-2 mt-3 pl-2">
                     {review.images.map((img: string, i: number) => (
@@ -692,7 +842,6 @@ export default function ProductDetailPage() {
                     ))}
                   </div>
                 )}
-                {/* --- KẾT THÚC PHẦN 5 --- */}
 
                 <div className="flex items-center gap-4 mt-3 text-xs font-medium text-gray-400 dark:text-gray-500 pl-2">
                   <button className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400"><ThumbsUp className="w-3 h-3" /> Hữu ích</button>
@@ -713,31 +862,108 @@ export default function ProductDetailPage() {
           <div className="hidden md:flex items-center gap-3">
             <img src={product.imageUrl} className="w-12 h-12 rounded-lg border dark:border-gray-700 p-1 bg-gray-50 dark:bg-gray-800 object-contain dark:mix-blend-normal mix-blend-multiply" alt="thumb-float" />
             <div>
-              <p className="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-1">{product.name}</p>
               <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-1">{product.name}</p>
+                {product.isFlashSale && !isOutOfStock && (
+                  <span className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 whitespace-nowrap">
+                    <Zap className="w-3 h-3 fill-yellow-300 text-yellow-300" /> FLASH SALE
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-red-600 dark:text-red-500 font-black">{Number(product.price).toLocaleString("vi-VN")}₫</span>
                 {product.originalPrice && <span className="text-xs text-gray-400 dark:text-gray-500 line-through">{Number(product.originalPrice).toLocaleString("vi-VN")}₫</span>}
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2 w-full md:w-[400px]">
-            <button 
-              disabled={product.stock <= 0 || isAddingCart}
-              onClick={handleAddToCart}
-              className="flex-1 py-3 border-2 border-red-600 text-red-600 bg-white dark:bg-[#18181b] rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
-            >
-              <ShoppingCart className="w-5 h-5" /> {isAddingCart ? "Đang thêm..." : "Thêm giỏ"}
-            </button>
-            <button 
-              disabled={product.stock <= 0 || isAddingCart}
-              onClick={handleBuyNow} 
-              className="flex-1 py-3 bg-red-600 text-white rounded-xl font-black text-sm hover:bg-red-700 shadow-md shadow-red-200 dark:shadow-none transition-colors disabled:opacity-50"
-            >
-              {isAddingCart ? "Đang xử lý..." : "MUA NGAY"}
-            </button>
+            {isOutOfStock ? (
+              <button 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex-1 py-3 bg-gray-800 text-white rounded-xl font-black text-sm flex items-center justify-center transition-colors"
+              >
+                SẢN PHẨM ĐANG HẾT HÀNG
+              </button>
+            ) : (
+              <>
+                <button 
+                  disabled={isAddingCart}
+                  onClick={handleAddToCart}
+                  className="flex-1 py-3 border-2 border-red-600 text-red-600 bg-white dark:bg-[#18181b] rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                >
+                  <ShoppingCart className="w-5 h-5" /> {isAddingCart ? "Đang thêm..." : "Thêm giỏ"}
+                </button>
+                <button 
+                  disabled={isAddingCart}
+                  onClick={handleBuyNow} 
+                  className="flex-1 py-3 bg-red-600 text-white rounded-xl font-black text-sm hover:bg-red-700 shadow-md shadow-red-200 dark:shadow-none transition-colors disabled:opacity-50"
+                >
+                  {isAddingCart ? "Đang xử lý..." : "MUA NGAY"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* MODAL HIỂN THỊ KHÁCH HÀNG ĐĂNG KÝ THẬT TỪ DATABASE */}
+      {showRegisteredUsers && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowRegisteredUsers(false)} />
+          <div className="relative w-full max-w-lg bg-white dark:bg-[#18181b] rounded-2xl shadow-xl flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden border border-gray-100 dark:border-gray-800">
+            <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+              <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">KHÁCH HÀNG ĐĂNG KÝ NHẬN THÔNG TIN</h2>
+              <button onClick={() => setShowRegisteredUsers(false)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="p-4 flex-1 overflow-y-auto max-h-[60vh] custom-scrollbar">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                Có <strong className="text-red-600">{registeredUsers.length}</strong> khách đăng ký
+              </p>
+              
+              {registeredUsers.length > 0 ? (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-bold">
+                        <th className="px-4 py-3">Khách hàng</th>
+                        <th className="px-4 py-3">Số điện thoại</th>
+                        <th className="px-4 py-3 text-right">Thời gian</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {registeredUsers.map((user) => {
+                        const dateObj = new Date(user.createdAt);
+                        const formattedDate = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')} ${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+                        const maskedPhone = user.phone.length >= 3 ? '*'.repeat(user.phone.length - 3) + user.phone.slice(-3) : user.phone;
+                        
+                        return (
+                          <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                            <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{user.name}</td>
+                            <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{maskedPhone}</td>
+                            <td className="px-4 py-3 text-gray-500 dark:text-gray-500 text-right text-xs">{formattedDate}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500 text-sm italic">
+                  Chưa có khách hàng nào đăng ký cho sản phẩm này.
+                </div>
+              )}
+            </div>
+            
+            <div className="p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 text-center">
+              <span className="text-xs font-bold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-md">1</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }

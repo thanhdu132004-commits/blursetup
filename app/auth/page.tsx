@@ -1,3 +1,4 @@
+// app/auth/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -53,8 +54,9 @@ export default function AuthPage() {
       if (result?.error) {
         alert("Sai email hoặc mật khẩu! Vui lòng thử lại.");
       } else {
-        router.push("/");
-        router.refresh(); 
+        // ĐÃ SỬA: Ép trình duyệt tải lại trang chủ bằng Hard Navigation 
+        // để đảm bảo Navbar và Chatbot cập nhật đúng trạng thái.
+        window.location.href = "/";
       }
     }
     setIsLoading(false);

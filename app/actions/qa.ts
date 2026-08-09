@@ -60,3 +60,25 @@ export async function adminReplyToQuestion(questionId: string, adminId: string, 
     return { success: false, error: "Không thể gửi câu trả lời lúc này." };
   }
 }
+
+// ==========================================
+// XÓA CÂU HỎI (QUẢN TRỊ VIÊN)
+// ==========================================
+export async function deleteQuestion(questionId: string) {
+  try {
+    await prisma.question.delete({
+      where: { id: questionId },
+    });
+    
+    // Cập nhật lại UI ở trang chủ và trang QA
+    revalidatePath("/");
+    revalidatePath("/qa");
+    revalidatePath("/admin/qa");
+    revalidatePath("/admin");
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("Lỗi xóa câu hỏi:", error);
+    return { success: false, error: "Không thể xóa câu hỏi lúc này." };
+  }
+}

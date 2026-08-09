@@ -1,8 +1,18 @@
+// components/admin/admin-sidebar.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Package, TrendingUp } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Users, 
+  Settings, 
+  LogOut, 
+  Package, 
+  TrendingUp, 
+  MessageSquare // Đã import thêm icon cho Hỏi đáp
+} from "lucide-react";
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -12,6 +22,8 @@ export function AdminSidebar() {
     { href: "/admin/orders", label: "Đơn hàng", icon: <ShoppingBag className="w-5 h-5" /> },
     { href: "/admin/products", label: "Sản phẩm", icon: <Package className="w-5 h-5" /> },
     { href: "/admin/customers", label: "Khách hàng", icon: <Users className="w-5 h-5" /> },
+    // ĐÃ BỔ SUNG TRANG QUẢN LÝ HỎI ĐÁP Ở ĐÂY
+    { href: "/admin/qa", label: "Hỏi đáp", icon: <MessageSquare className="w-5 h-5" /> },
     { href: "/admin/analytics", label: "Thống kê", icon: <TrendingUp className="w-5 h-5" /> },
     { href: "/admin/settings", label: "Cài đặt", icon: <Settings className="w-5 h-5" /> },
   ];

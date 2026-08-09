@@ -1,3 +1,4 @@
+// app/admin/products/actions.ts
 "use server";
 
 import { prisma } from "@/lib/prisma";
@@ -16,6 +17,7 @@ export interface ProductInput {
   condition: string;
   isNew?: boolean;             
   isFeatured?: boolean;        
+  isFlashSale?: boolean;       // THÊM TRƯỜNG NÀY
   tags?: string[];             
   highlights?: string[];       // Tính năng nổi bật
   specs?: any;                 // Thông số kỹ thuật (Object JSON)
@@ -57,6 +59,7 @@ export async function createProduct(data: ProductInput) {
         condition: data.condition,
         isNew: data.isNew || false,
         isFeatured: data.isFeatured || false,
+        isFlashSale: data.isFlashSale || false, // THÊM TRƯỜNG NÀY
         tags: data.tags || [],
         highlights: data.highlights || [],
         specs: data.specs || {}, // Lưu JSON
@@ -84,6 +87,7 @@ export async function updateProduct(id: string, data: ProductInput) {
         condition: data.condition,
         isNew: data.isNew ?? false,
         isFeatured: data.isFeatured ?? false,
+        isFlashSale: data.isFlashSale ?? false, // THÊM TRƯỜNG NÀY
         tags: data.tags || [],
         highlights: data.highlights || [],
         specs: data.specs || {},

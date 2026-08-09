@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -23,10 +24,10 @@ import { getNews } from "./admin/news/actions";
 // Giữ lại MOCK cho Reviews YouTube và Hỏi đáp
 const MOCK_REVIEWS = [
   { 
-    title: "Galaxy S26 Series: Đánh giá chi tiết sau 1 tuần sử dụng thực tế", 
+    title: "ASUS ROG Strix SCAR 18 2025 - gaming laptop with RTX 5090", 
     channel: "BlurReview", 
-    imageUrl: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80",
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiuittbeZxeM9xdntdgPbWi2mxv30dZ9hBUNFmufOZNQ&s=10",
+    youtubeUrl: "https://www.youtube.com/shorts/_WFMEICAYhw?feature=share"
   },
   { 
     title: "Laptop HP Omnibook X: Chip Snapdragon X Elite có thực sự bá chủ?", 
@@ -225,7 +226,7 @@ function Home() {
   ];
 
   const oldProducts = products.filter(p => p.condition === "Cũ");
-  const flashSaleProducts = products.filter(p => p.originalPrice && p.originalPrice > p.price).slice(0, 5);
+  const flashSaleProducts = products.filter(p => (p as any).isFlashSale).slice(0, 5);
 
   return (
     <div className="bg-gray-100 dark:bg-[#09090b] min-h-screen pb-12 transition-colors duration-300">
@@ -541,7 +542,7 @@ function Home() {
           </div>
         </div>
 
-{/* KHỐI 8: SẢN PHẨM BẠN ĐÃ XEM LẠI */}
+        {/* KHỐI 8: SẢN PHẨM BẠN ĐÃ XEM LẠI */}
         {!loading && viewedProducts.length > 0 && (
           <div className="relative bg-white dark:bg-[#18181b] rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 dark:border-gray-800 mt-8 transition-colors duration-300">
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 dark:border-gray-800 pb-3">
@@ -558,7 +559,6 @@ function Home() {
               {viewedProducts.map((product, idx) => (
                 <div 
                   key={`viewed-${product.id}-${idx}`} 
-                  // ĐÃ FIX: Thêm flex-none và đổi min-w thành w cố định
                   className="flex-none w-[200px] md:w-[220px] lg:w-[230px] snap-start bg-white dark:bg-[#18181b] rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800"
                 >
                   <ProductCard product={product} />
@@ -624,7 +624,7 @@ function Home() {
           )}
         </div>
 
-        {/* KHỐI 11: NỘI DUNG SEO - ĐÃ BỎ TIN TỨC LIÊN QUAN */}
+        {/* KHỐI 11: NỘI DUNG SEO */}
         <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 md:p-6 shadow-sm relative flex flex-col justify-between mt-6">
           <div className={`space-y-6 text-sm text-gray-600 dark:text-gray-300 leading-relaxed transition-all duration-300 pr-2
             ${isContentExpanded ? "max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200" : "max-h-[350px] overflow-hidden"}`}
@@ -648,7 +648,7 @@ function Home() {
           </div>
         </div>
 
-        {/* KHỐI 12: HỎI ĐÁP Q&A (DỮ LIỆU THẬT) */}
+        {/* --- KHỐI 12: HỎI ĐÁP Q&A ĐÃ ĐƯỢC TỐI ƯU --- */}
         <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 md:p-6 shadow-sm space-y-6">
           <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tight flex items-center gap-2">
@@ -683,9 +683,9 @@ function Home() {
             </div>
           </div>
 
-          {/* Danh sách Hỏi Đáp */}
+          {/* Danh sách 2 Câu Hỏi Mới Nhất */}
           <div className="space-y-6 pt-2">
-            {questions.length > 0 ? questions.map((q) => (
+            {questions.length > 0 ? questions.slice(0, 2).map((q) => (
               <div key={q.id} className="space-y-4 border-b border-gray-50 dark:border-gray-800 pb-5 last:border-0 last:pb-0">
                 
                 {/* Người hỏi */}
@@ -728,6 +728,17 @@ function Home() {
               </div>
             )) : (
               <div className="text-sm text-gray-500 italic text-center py-4">Chưa có câu hỏi nào. Hãy là người đầu tiên đặt câu hỏi!</div>
+            )}
+            
+            {/* Nút Xem Tất Cả */}
+            {questions.length > 2 && (
+              <div className="text-center pt-2">
+                <Link href="/qa">
+                  <button className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition shadow-sm text-sm">
+                    Xem tất cả {questions.length} câu hỏi
+                  </button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

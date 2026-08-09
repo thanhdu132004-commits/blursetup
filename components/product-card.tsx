@@ -1,3 +1,4 @@
+// components/product-card.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +10,6 @@ import { toggleWishlist, getUserWishlist } from "@/app/actions/wishlist";
 import toast from "react-hot-toast";
 
 // === KỸ THUẬT TỐI ƯU (PROMISE CACHING VỚI STATIC CACHE) ===
-// Giúp 30 thẻ sản phẩm chỉ gọi API 1 lần duy nhất thay vì 30 lần
 const WishlistCache = {
   promise: null as Promise<string[]> | null,
   cachedUserId: null as string | null,
@@ -38,6 +38,7 @@ export interface Product {
   category?: string;
   brand?: string;
   condition?: string;
+  stock?: number;
 }
 
 export function ProductCard({ product }: { product: Product }) {
@@ -51,13 +52,13 @@ export function ProductCard({ product }: { product: Product }) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-  // Kiểm tra trạng thái yêu thích TỐI ƯU HÓA
+  const isOutOfStock = product.stock !== undefined && product.stock <= 0;
+
   useEffect(() => {
     let isMounted = true;
     async function checkWishlist() {
       if (session?.user) {
         const userId = (session.user as any).id;
-        // Gọi qua hàm Cache thay vì gọi thẳng API
         const wishlist = await getSharedWishlist(userId);
         if (isMounted) {
           setIsLiked(wishlist.includes(product.id));
@@ -68,9 +69,9 @@ export function ProductCard({ product }: { product: Product }) {
     return () => { isMounted = false };
   }, [session, product.id]);
 
-  // Xử lý Thêm vào giỏ
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); 
+    if (isOutOfStock) return;
     setIsAdding(true);
     try {
       const userId = (session?.user as any)?.id || "6a0de954edad2fe7af807713"; 
@@ -89,7 +90,6 @@ export function ProductCard({ product }: { product: Product }) {
     }
   };
 
-  // Xử lý Thả tim
   const handleToggleHeart = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!session?.user) {
@@ -98,14 +98,13 @@ export function ProductCard({ product }: { product: Product }) {
     }
     const userId = (session.user as any).id;
     const previousState = isLiked;
-    setIsLiked(!isLiked); // Optimistic Update
+    setIsLiked(!isLiked); 
 
     const res = await toggleWishlist(userId, product.id);
     if (!res.success) {
-      setIsLiked(previousState); // Lỗi thì hoàn tác UI
+      setIsLiked(previousState); 
       toast.error("Lỗi khi cập nhật yêu thích!");
     } else {
-      // Cập nhật lại Cache toàn cục để các trang khác nhận diện đúng
       WishlistCache.promise = Promise.resolve(res.wishlist as string[]);
       if (!previousState) toast.success("Đã thêm vào danh sách yêu thích ♥️");
     }
@@ -154,6 +153,14 @@ export function ProductCard({ product }: { product: Product }) {
           </h3>
         </Link>
 
+        {isOutOfStock && (
+          <div className="mt-1.5">
+            <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-2 py-0.5 rounded">
+              Sắp về hàng
+            </span>
+          </div>
+        )}
+
         <div className="mt-3 flex items-end justify-between">
           <div className="flex flex-col">
             <span className="text-sm md:text-base font-black text-red-600 dark:text-red-500">
@@ -167,8 +174,8 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
           
           <button 
-            disabled={isAdding}
-            className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-500 flex items-center justify-center hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:hover:text-white transition-colors flex-shrink-0 disabled:opacity-50"
+            disabled={isAdding || isOutOfStock}
+            className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-500 flex items-center justify-center hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:hover:text-white transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
           >
             {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}

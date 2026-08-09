@@ -35,6 +35,7 @@ model User {
   // Quan hệ
   orders    Order[]
   cart      Cart?    // Mối quan hệ 1-1 với giỏ hàng
+  chatMessages ChatMessage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,6 +65,7 @@ model Product {
   condition     String
   isNew         Boolean     @default(false)
   isFeatured    Boolean     @default(false)
+  isFlashSale   Boolean     @default(false)
   rating        Float       @default(5)
   reviewCount   Int         @default(0)
   tags          String[]
@@ -80,6 +82,8 @@ model Product {
   // Quan hệ
   orderItems    OrderItem[]
   cartItems     CartItem[]
+
+  restockRequests RestockRequest[]
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -263,4 +267,41 @@ model Setting {
   updatedAt         DateTime @updatedAt
 
   @@map("settings")
+}
+
+// =========================
+// CHAT HISTORY
+// =========================
+model ChatMessage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  role       String   // "user" hoặc "bot"
+  text       String
+  widget     String?  // Dùng để lưu trạng thái widget (order-form, product-recommend)
+  widgetData Json?    // Lưu JSON mảng sản phẩm AI gợi ý
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+
+  @@map("chat_messages")
+}
+
+//
+// =========================
+// ĐĂNG KÝ NHẬN THÔNG TIN (HẾT HÀNG)
+// =========================
+//
+model RestockRequest {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  name      String
+  phone     String
+  email     String?
+  location  String?
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("restock_requests")
 }

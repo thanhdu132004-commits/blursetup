@@ -1,22 +1,23 @@
+// components/floating-contact.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // <-- THÊM IMPORT NÀY
+import { usePathname } from "next/navigation"; 
 import { MessageCircle, X, Bot } from "lucide-react";
-import { ChatBot } from "./chat-bot"; // Đảm bảo file chat-bot.tsx đã nằm cùng thư mục components
+import { ChatBot } from "./chat-bot"; 
 
 export function FloatingContact() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false); // State quản lý cửa sổ chat AI
+  const [isChatOpen, setIsChatOpen] = useState(false); 
   const menuRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname(); // <-- LẤY ĐƯỜNG DẪN HIỆN TẠI
+  const pathname = usePathname(); 
 
   // =================================================================
   // ĐIỀN DỮ LIỆU THẬT CỦA BẠN VÀO ĐÂY
   // =================================================================
-  const ZALO_PHONE = "0328275837"; // <-- Điền SĐT Zalo (Viết liền)
-  const FACEBOOK_LINK = "https://m.me/nguyen.thanhdu.31392"; // <-- Điền link Messenger
+  const ZALO_PHONE = "0328275837"; 
+  const FACEBOOK_LINK = "https://m.me/nguyen.thanhdu.31392"; 
   // =================================================================
 
   // Đóng menu khi click ra ngoài vùng nút
@@ -30,8 +31,9 @@ export function FloatingContact() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // KHÔNG HIỂN THỊ NẾU ĐANG Ở TRANG ADMIN
-  if (pathname?.startsWith("/admin")) {
+  // ĐÃ SỬA: CHỈ HIỂN THỊ Ở TRANG CHỦ. 
+  // NẾU KHÔNG PHẢI TRANG CHỦ THÌ ẨN HOÀN TOÀN NÚT VÀ KHUNG CHAT
+  if (pathname !== "/") {
     return null;
   }
 

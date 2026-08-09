@@ -1,3 +1,4 @@
+// app/admin/products/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,9 +9,10 @@ import { getProducts, createProduct, updateProduct, deleteProduct } from "./acti
 // TEMPLATE THÔNG SỐ ĐỘNG THEO DANH MỤC
 const getDynamicSpecsTemplate = (category: string) => {
   switch (category) {
-    case "Laptop": return ["CPU", "RAM", "Ổ cứng", "Loại card đồ họa", "Màn hình", "Pin", "Dung lượng RAM", "Công nghệ màn hình", "Hệ điều hành", "Cổng giao tiếp"];
+    case "Laptop": return ["Chip AI", "CPU", "RAM", "Số khe ram", "Ổ cứng", "Kích thước màn hình", "Loại card đồ họa", "Độ phân giải màn hình", "Pin", "Dung lượng RAM", "Công nghệ màn hình", "Hệ điều hành", "Cổng giao tiếp"];
     case "Màn hình": return ["Kích thước", "Độ phân giải", "Tấm nền", "Tần số quét", "Cổng kết nối", "Thời gian phản hồi", "Trọng lượng"];
-    case "Bàn phím": return ["Số phím", "Tương thích", "Kết nối", "Khoảng cách kết nối (Độ dài dây)", "Đèn LED", "Thời gian dùng"];
+    // ĐÃ BỔ SUNG: Loại bàn phím, Hãng sản xuất
+    case "Bàn phím": return ["Loại bàn phím", "Số phím", "Tương thích", "Kết nối", "Thời gian dùng", "Đèn LED", "Khoảng cách kết nối (Độ dài dây)", "Hãng sản xuất", "phím đặc biệt", "đèn nền LED", "kích thước bàn phím"];
     case "Chuột": return ["Tương thích", "Độ phân giải", "Kết nối", "Thời gian dùng", "Đèn LED", "Khoảng cách kết nối (Độ dài dây)"];
     case "Tai nghe": return ["Kích thước", "Kết nối", "Trọng lượng", "Microphone", "Thời lượng sử dụng Pin", "Tính năng khác", "Phạm vi kết nối", "Công nghệ âm thanh"];
     case "Ghế": return ["Chất liệu", "Kê tay", "Trọng tải tối đa", "Ngả lưng"];
@@ -31,7 +33,7 @@ function AdminProductsPage() {
   
   const emptyForm = { 
     name: "", description: "", price: 0, originalPrice: 0, stock: 0, category: "Laptop", 
-    imageUrl: "", brand: "Apple", condition: "Mới", gallery: "", tags: "", isNew: false, isFeatured: false,
+    imageUrl: "", brand: "Apple", condition: "Mới", gallery: "", tags: "", isNew: false, isFeatured: false, isFlashSale: false,
     highlightsText: "", 
     specsObj: {} as Record<string, string> 
   };
@@ -90,7 +92,7 @@ function AdminProductsPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.name || formData.price <= 0 || !formData.brand || !formData.category) return alert("Vui lòng nhập đầy đủ: Tên, Giá, Thương hiệu và Danh mục!");
+    if (!formData.name || formData.price < 0 || !formData.brand || !formData.category) return alert("Vui lòng nhập đầy đủ: Tên, Giá, Thương hiệu và Danh mục!");
     setIsSubmitting(true);
     
     const cleanSpecs: Record<string, string> = {};
@@ -108,7 +110,8 @@ function AdminProductsPage() {
         highlights: formData.highlightsText ? formData.highlightsText.split('\n').filter(s => s.trim() !== '') : [],
         specs: cleanSpecs,
         isNew: Boolean(formData.isNew),
-        isFeatured: Boolean(formData.isFeatured)
+        isFeatured: Boolean(formData.isFeatured),
+        isFlashSale: Boolean(formData.isFlashSale)
     };
 
     const result = editingId ? await updateProduct(editingId, submitData) : await createProduct(submitData);
@@ -155,6 +158,7 @@ function AdminProductsPage() {
                       <div className="flex gap-2 mt-1">
                         <span className="text-[10px] font-bold text-gray-500 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md">{p.condition}</span>
                         {p.isFeatured && <span className="text-[10px] font-bold text-red-600 px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 rounded-md">Nổi bật</span>}
+                        {p.isFlashSale && <span className="text-[10px] font-bold text-yellow-600 px-1.5 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">Flash Sale</span>}
                       </div>
                     </div>
                 </td>
@@ -240,19 +244,32 @@ function AdminProductsPage() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                  <div className="space-y-1"><label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Giá bán</label><input type="number" className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white" value={formData.price || ""} onChange={e => setFormData({...formData, price: Number(e.target.value)})} /></div>
-                  <div className="space-y-1"><label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Giá gốc</label><input type="number" className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white" value={formData.originalPrice || ""} onChange={e => setFormData({...formData, originalPrice: Number(e.target.value)})} /></div>
-                  <div className="space-y-1"><label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Tồn kho</label><input type="number" className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white" value={formData.stock || ""} onChange={e => setFormData({...formData, stock: Number(e.target.value)})} /></div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Giá bán</label>
+                    <input type="number" className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white" value={formData.price !== undefined ? formData.price : ""} onChange={e => setFormData({...formData, price: Number(e.target.value)})} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Giá gốc</label>
+                    <input type="number" className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white" value={formData.originalPrice !== undefined && formData.originalPrice !== null ? formData.originalPrice : ""} onChange={e => setFormData({...formData, originalPrice: Number(e.target.value)})} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Tồn kho</label>
+                    <input type="number" className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white" value={formData.stock !== undefined ? formData.stock : ""} onChange={e => setFormData({...formData, stock: Number(e.target.value)})} />
+                  </div>
                 </div>
 
-                <div className="flex gap-6 p-4 bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl">
+                <div className="flex flex-wrap gap-4 p-4 bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl">
                   <label className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 accent-red-600" checked={formData.isNew} onChange={e => setFormData({...formData, isNew: e.target.checked})} /> 
+                    <input type="checkbox" className="w-4 h-4 accent-red-600 rounded border-gray-300" checked={formData.isNew} onChange={e => setFormData({...formData, isNew: e.target.checked})} /> 
                     Gắn mác "Mới"
                   </label>
                   <label className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 accent-red-600" checked={formData.isFeatured} onChange={e => setFormData({...formData, isFeatured: e.target.checked})} /> 
+                    <input type="checkbox" className="w-4 h-4 accent-red-600 rounded border-gray-300" checked={formData.isFeatured} onChange={e => setFormData({...formData, isFeatured: e.target.checked})} /> 
                     Gắn mác "Nổi bật"
+                  </label>
+                  <label className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 accent-red-600 rounded border-gray-300" checked={formData.isFlashSale} onChange={e => setFormData({...formData, isFlashSale: e.target.checked})} /> 
+                    Gắn mác "Flash Sale"
                   </label>
                 </div>
               </div>
@@ -287,8 +304,9 @@ function AdminProductsPage() {
                   {Object.keys(formData.specsObj).map((key) => (
                     <div key={key} className="space-y-1">
                       <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{key}</label>
-                      <input 
-                        className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white outline-none focus:border-red-500" 
+                      <textarea 
+                        rows={3}
+                        className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-[#09090b] dark:text-white outline-none focus:border-red-500 resize-none" 
                         value={formData.specsObj[key] || ""} 
                         onChange={(e) => setFormData(prev => ({...prev, specsObj: {...prev.specsObj, [key]: e.target.value}}))}
                       />

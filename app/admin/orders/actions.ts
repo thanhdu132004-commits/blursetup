@@ -210,3 +210,21 @@ export async function generateMockOrders() {
     return { success: false, error: "Đã xảy ra lỗi khi tạo dữ liệu mẫu." };
   }
 }
+
+// ==========================================
+// 5. LẤY DANH SÁCH ĐĂNG KÝ HÀNG (RESTOCK REQUESTS)
+// ==========================================
+export async function getAllRestockRequests() {
+  try {
+    const requests = await prisma.restockRequest.findMany({
+      include: {
+        product: true // Lấy kèm thông tin sản phẩm để hiển thị
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return requests;
+  } catch (error) {
+    console.error("Lỗi lấy danh sách đăng ký nhận hàng:", error);
+    return [];
+  }
+}

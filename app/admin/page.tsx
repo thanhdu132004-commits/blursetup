@@ -1,3 +1,4 @@
+// app/admin/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,12 +7,12 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { 
   Package, TrendingUp, DollarSign, 
-  ShoppingBag, Newspaper, MessageSquare, Reply, Loader2, Calendar, Crown
+  ShoppingBag, Newspaper, MessageSquare, Loader2, Calendar, Crown, ChevronRight
 } from "lucide-react";
 
 // Import Server Actions
-import { getQuestions, adminReplyToQuestion } from "@/app/actions/qa";
-import { getDashboardStats } from "./actions"; // <-- Đảm bảo import hàm bạn vừa tạo ở Bước 1
+import { getQuestions } from "@/app/actions/qa";
+import { getDashboardStats } from "./actions";
 
 function AdminDashboard() {
   const { data: session } = useSession();
@@ -23,10 +24,9 @@ function AdminDashboard() {
   const [recentNews, setRecentNews] = useState<any[]>([]);
   const [topProducts, setTopProducts] = useState<any[]>([]);
 
-  // State Hỏi Đáp
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [replyContent, setReplyContent] = useState<Record<string, string>>({});
-  const [isReplying, setIsReplying] = useState<string | null>(null);
+  // State Hỏi Đáp (Chỉ dùng để hiển thị số lượng và vài câu mới nhất)
+  const [unansweredCount, setUnansweredCount] = useState(0);
+  const [recentQuestions, setRecentQuestions] = useState<any[]>([]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -36,13 +36,18 @@ function AdminDashboard() {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Chạy song song cả 2 API để load trang nhanh hơn
       const [qaData, statsRes] = await Promise.all([
         getQuestions(),
         getDashboardStats()
       ]);
 
-      setQuestions(qaData);
+      if (qaData) {
+        // Đếm số câu hỏi chưa được trả lời
+        const unanswered = qaData.filter((q: any) => q.replies.length === 0);
+        setUnansweredCount(unanswered.length);
+        // Lấy 3 câu hỏi mới nhất để hiển thị nhanh
+        setRecentQuestions(qaData.slice(0, 3));
+      }
 
       if (statsRes.success && statsRes.data) {
         setStats({
@@ -59,24 +64,6 @@ function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleAdminReply = async (questionId: string) => {
-    const content = replyContent[questionId];
-    if (!content?.trim()) return alert("Vui lòng nhập nội dung câu trả lời!");
-
-    setIsReplying(questionId);
-    const adminId = (session?.user as any)?.id || "6a0de954edad2fe7af807713";
-
-    const res = await adminReplyToQuestion(questionId, adminId, content);
-    if (res.success) {
-      alert("Đã trả lời khách hàng thành công!");
-      setReplyContent(prev => ({ ...prev, [questionId]: "" }));
-      loadDashboardData(); // Load lại data
-    } else {
-      alert(res.error);
-    }
-    setIsReplying(null);
   };
 
   if (!isMounted) return null;
@@ -172,63 +159,33 @@ function AdminDashboard() {
             {/* CỘT TRÁI: HỎI ĐÁP & TIN TỨC */}
             <div className="xl:col-span-2 space-y-6">
               
-              {/* QUẢN LÝ HỎI ĐÁP KHÁCH HÀNG */}
+              {/* TÓM TẮT HỎI ĐÁP KHÁCH HÀNG (ĐÃ TỐI ƯU) */}
               <div className="bg-white dark:bg-[#18181b] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-colors duration-300">
                 <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-blue-50/30 dark:bg-blue-900/10">
                   <h2 className="text-sm font-black text-gray-900 dark:text-gray-100 uppercase flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Hỏi đáp từ khách hàng
+                    <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Giao tiếp khách hàng
                   </h2>
-                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold px-2 py-1 rounded-md">
-                    {questions.filter(q => q.replies.length === 0).length} câu hỏi chưa đáp
+                  <span className={`${unansweredCount > 0 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'} text-xs font-bold px-2 py-1 rounded-md`}>
+                    {unansweredCount} câu hỏi chưa đáp
                   </span>
                 </div>
                 
-                <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-[600px] overflow-y-auto custom-scrollbar">
-                  {questions.length > 0 ? questions.map(q => (
-                    <div key={q.id} className="p-5 space-y-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                      <div className="flex justify-between items-start gap-4">
-                        <div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-gray-100">{q.user?.name || "Khách hàng ẩn danh"}</div>
-                          <div className="text-[10px] text-gray-500 dark:text-gray-400">{new Date(q.createdAt).toLocaleString("vi-VN")}</div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {recentQuestions.length > 0 ? recentQuestions.map(q => (
+                    <div key={q.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex justify-between items-start gap-4">
+                      <div>
+                        <div className="font-bold text-sm text-gray-900 dark:text-gray-100">{q.user?.name || "Khách hàng ẩn danh"}</div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 mb-1">{new Date(q.createdAt).toLocaleString("vi-VN")}</div>
+                        <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                          <span className="font-bold text-gray-500 mr-1">Hỏi:</span>{q.content}
                         </div>
+                      </div>
+                      <div className="flex-shrink-0 mt-1">
                         {q.replies?.length > 0 ? (
                           <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-bold px-2.5 py-1 rounded-md border border-green-200 dark:border-green-800">Đã trả lời</span>
                         ) : (
-                          <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold px-2.5 py-1 rounded-md border border-orange-200 dark:border-orange-800">Chờ xử lý</span>
+                          <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold px-2.5 py-1 rounded-md border border-orange-200 dark:border-orange-800 animate-pulse">Chờ xử lý</span>
                         )}
-                      </div>
-                      
-                      <div className="text-sm text-gray-800 dark:text-gray-200 bg-gray-100/70 dark:bg-gray-800 p-3 rounded-xl border border-gray-200/50 dark:border-gray-700">
-                        <span className="font-bold text-red-600 dark:text-red-400 mr-1">Hỏi:</span>{q.content}
-                      </div>
-
-                      {q.replies?.map((r: any) => (
-                        <div key={r.id} className="ml-4 pl-4 border-l-2 border-green-400 space-y-1">
-                          <div className="font-bold text-[11px] text-green-700 dark:text-green-400">
-                            {r.user?.name || "Admin"} đã trả lời lúc {new Date(r.createdAt).toLocaleString("vi-VN")}:
-                          </div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 bg-green-50 dark:bg-green-900/20 p-3 rounded-xl border border-green-100 dark:border-green-800">{r.content}</p>
-                        </div>
-                      ))}
-
-                      <div className="flex gap-2 pt-2">
-                        <input
-                          type="text"
-                          placeholder="Gõ câu trả lời của bạn..."
-                          value={replyContent[q.id] || ""}
-                          onChange={e => setReplyContent({...replyContent, [q.id]: e.target.value})}
-                          className="flex-1 text-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all bg-white dark:bg-[#09090b] dark:text-white"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAdminReply(q.id);
-                          }}
-                        />
-                        <button
-                          onClick={() => handleAdminReply(q.id)}
-                          disabled={isReplying === q.id}
-                          className="bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900 px-5 py-2.5 rounded-xl text-xs font-bold transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
-                        >
-                          <Reply className="w-3.5 h-3.5" /> {isReplying === q.id ? "Đang gửi..." : "Trả lời"}
-                        </button>
                       </div>
                     </div>
                   )) : (
@@ -237,6 +194,13 @@ function AdminDashboard() {
                       <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">Chưa có câu hỏi nào từ khách hàng.</div>
                     </div>
                   )}
+                </div>
+                
+                {/* NÚT XEM TẤT CẢ Q&A DẪN SANG TRANG MỚI */}
+                <div className="p-4 border-t border-gray-100 dark:border-gray-800 text-center bg-gray-50/50 dark:bg-gray-900/20">
+                  <Link href="/admin/qa" className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                    Đi tới Quản lý Hỏi Đáp <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
 
@@ -266,7 +230,7 @@ function AdminDashboard() {
             {/* CỘT PHẢI: BÁN CHẠY DỮ LIỆU THẬT */}
             <div className="space-y-6">
               <div className="bg-white dark:bg-[#18181b] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 transition-colors duration-300">
-                 <h2 className="text-sm font-black text-gray-900 dark:text-gray-100 uppercase mb-4 flex items-center gap-2">
+                 <h2 className="text-sm font-black text-gray-900 dark:text-white uppercase mb-4 flex items-center gap-2">
                    <TrendingUp className="w-4 h-4 text-orange-500 dark:text-orange-400" /> Top Sản phẩm bán chạy
                  </h2>
                  <div className="space-y-4">

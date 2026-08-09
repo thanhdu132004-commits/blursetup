@@ -5,7 +5,9 @@ import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import ClientLayoutWrapper from "./client-layout-wrapper";
 import { FloatingContact } from "@/components/floating-contact";
-import { ThemeProvider } from "@/components/theme-provider"; // Đã import ThemeProvider
+import { ThemeProvider } from "@/components/theme-provider";
+// ĐÃ THÊM: Import SessionWrapper chuẩn theo đường dẫn thư mục của bạn
+import { SessionWrapper } from "@/components/SessionWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,22 +21,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // suppressHydrationWarning cần thiết khi sử dụng next-themes để tránh cảnh báo console
     <html lang="vi" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        {/* Bọc toàn bộ ứng dụng bằng ThemeProvider */}
-        <ThemeProvider 
-          attribute="class" 
-          defaultTheme="system" 
-          enableSystem
-        >
-          <ClientLayoutWrapper>
-            {children}
-          </ClientLayoutWrapper>
-          
-          {/* Nút Chat nổi */}
-          <FloatingContact />
-          
-          {/* Toast Notification */}
-          <Toaster position="top-right" reverseOrder={false} />
-        </ThemeProvider>
+        {/* ĐÃ THÊM: Bọc toàn bộ ứng dụng bằng SessionWrapper để cấp quyền sử dụng NextAuth */}
+        <SessionWrapper>
+          {/* Bọc toàn bộ ứng dụng bằng ThemeProvider */}
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="system" 
+            enableSystem
+          >
+            <ClientLayoutWrapper>
+              {children}
+            </ClientLayoutWrapper>
+            
+            {/* Nút Chat nổi bây giờ đã nằm an toàn trong vùng phủ sóng của NextAuth */}
+            <FloatingContact />
+            
+            {/* Toast Notification */}
+            <Toaster position="top-right" reverseOrder={false} />
+          </ThemeProvider>
+        </SessionWrapper>
       </body>
     </html>
   );
